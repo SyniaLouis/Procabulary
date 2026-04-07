@@ -2,43 +2,37 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Procab Engine - Cổng học tập</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        .home-header { text-align: center; padding: 50px 20px 20px; }
-        .home-header h1 { color: var(--primary); font-size: 2.2rem; margin-bottom: 10px; }
-        .home-header p { color: #636e72; font-size: 1.1rem; }
-        .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
-        .cat-card {
-            background: var(--card-bg); border: 2px solid var(--border); border-radius: 15px;
-            padding: 30px 20px; text-align: center; text-decoration: none; color: var(--text);
-            transition: 0.3s; display: block; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        }
-        .cat-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .cat-icon { font-size: 3rem; margin-bottom: 15px; }
-        .cat-title { font-size: 1.3rem; font-weight: bold; margin-bottom: 8px; }
-        .cat-desc { font-size: 0.9rem; color: #636e72; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luyện thi IELTS - Procab Engine</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="home-header">
-            <h1>Procab Engine V2.2</h1>
-            <p>Hãy chọn một chuyên ngành để rèn luyện nhé! 🎯</p>
-        </div>
-        <div class="category-grid">
-            <a href="cntt/index.html" class="cat-card">
-                <div class="cat-icon">💻</div>
-                <div class="cat-title">Công nghệ thông tin</div>
-                <div class="cat-desc">Hệ thống, lập trình, phần mềm</div>
-            </a>
-            <a href="su-pham/index.html" class="cat-card">
-                <div class="cat-icon">📚</div>
-                <div class="cat-title">Sư phạm TESOL</div>
-                <div class="cat-desc">Kỹ năng giảng dạy, phương pháp</div>
-            </a>
+
+<div class="container" id="main-container">
+    <div class="header-bar">
+        <a href="../index.html" class="icon-btn" style="position: absolute; left: 0; text-decoration: none;" title="Trang chủ">🏠</a>
+        <h2 id="dynamic-title">Hệ thống thẻ ghi nhớ</h2>
+        <div class="header-btns">
+            <div class="icon-btn" id="speed-btn" onclick="toggleSpeed()" title="Tốc độ đọc">1.0x</div>
+            <div class="icon-btn" id="voice-btn" onclick="toggleVoice()" title="Giọng đọc">US</div>
+            <div class="icon-btn" id="theme-btn" onclick="toggleDarkMode()" title="Chế độ tối">🌙</div>
         </div>
     </div>
+
+    <div id="view-dashboard">
+        <div id="dashboard-grid" class="dashboard-grid"></div>
+    </div>
+    <div id="view-lesson" class="hidden">
+        <div id="lesson-content"></div>
+    </div>
+</div>
+
+<div id="selection-modal" class="modal-overlay hidden"><div class="modal-content"><h3>Chọn số lượng từ ôn tập 🎯</h3><div id="selection-options" class="option-grid"></div><button class="back-btn" onclick="closeSelectionModal()" style="margin-top:20px">HỦY</button></div></div>
+<div id="confirm-modal" class="modal-overlay hidden"><div class="modal-content"><h3>Xác nhận thoát 🚪</h3><div style="display:flex;gap:10px;margin-top:25px"><button style="background:var(--primary);flex:1" onclick="closeConfirmModal()">LÀM TIẾP</button><button style="background:var(--error);flex:1" id="exit-btn">THOÁT</button></div></div></div>
+
+<script>
+    window.CATEGORY_FILTER = 'IELTS'; // Lưu ý: Chữ này phải khớp với nội dung ở Cột E trong Google Sheets nhé!
+</script>
+<script src="../assets/js/script.js"></script>
 </body>
 </html>
