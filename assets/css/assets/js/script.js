@@ -89,25 +89,21 @@ async function fetchFlashcardsFromSheets() {
     try {
         const response = await fetch(SHEET_CSV_URL);
         const csvText = await response.text();
-        const rows = [];
-        let currentRow = [];
-        let currentCell = '';
-        let insideQuotes = false;
-        for (let i = 0; i < csvText.length; i++) {
-            const char = csvText[i];
-            const nextChar = csvText[i+1];
-            if (char === '"' && insideQuotes && nextChar === '"') { currentCell += '"'; i++; }
-            else if (char === '"') { insideQuotes = !insideQuotes; }
-            else if (char === ',' && !insideQuotes) { currentRow.push(currentCell.trim()); currentCell = ''; }
-            else if ((char === '\n' || char === '\r') && !insideQuotes) {
-                if (currentRow.length > 0 || currentCell !== '') { currentRow.push(currentCell.trim()); rows.push(currentRow); currentRow = []; currentCell = ''; }
-            } else { currentCell += char; }
-        }
-        if (currentRow.length > 0 || currentCell !== '') { currentRow.push(currentCell.trim()); rows.push(currentRow); }
+        // ... (Đoạn code bóc tách chuỗi CSV của em giữ nguyên) ...
+
         LESSONS_DATABASE = {};
         rows.slice(1).forEach(cols => {
-            if (cols.length >= 4) {
+            // Kiểm tra cột E (index 4) là Category
+            if (cols.length >= 5) {
                 const id = cols[0];
+                const title = cols[1];
+                const category = cols[4].trim(); // Lấy tên chuyên ngành từ Google Sheets
+
+                // Lọc dữ liệu: Nếu file HTML có khai báo biến CATEGORY_FILTER mà không khớp thì bỏ qua
+                if (window.CATEGORY_FILTER && window.CATEGORY_FILTER !== category) {
+                    return; 
+                }
+
                 const vocabParts = cols[2].split(',');
                 const wordsArray = [];
                 for (let i = 0; i < vocabParts.length; i += 3) {
@@ -115,7 +111,7 @@ async function fetchFlashcardsFromSheets() {
                         wordsArray.push({ word: vocabParts[i].trim(), ipa: vocabParts[i+1].trim(), meaning: vocabParts[i+2].trim() });
                     }
                 }
-                LESSONS_DATABASE[id] = { title: cols[1], words: wordsArray, num: parseInt(cols[3]) };
+                LESSONS_DATABASE[id] = { title: title, words: wordsArray, num: parseInt(cols[3]) };
             }
         });
     } catch (error) { console.error("Lỗi dữ liệu: ", error); }
