@@ -1,3 +1,47 @@
+<script type="module">
+ 
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
+    authDomain: "procabulary-engine.firebaseapp.com",
+    projectId: "procabulary-engine",
+    storageBucket: "procabulary-engine.firebasestorage.app",
+    messagingSenderId: "271617165131",
+    appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
+    measurementId: "G-NCL1PT38MN"
+  };
+
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+
+const auth = getAuth();
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // 1. Nếu đã đăng nhập: Hiển thị Profile & Avatar trên Navbar
+    console.log("Chào mừng Mây:", user.displayName);
+    updateUIForUser(user);
+  } else {
+    // 2. Nếu chưa đăng nhập: Chặn truy cập trang học (IELTS/TOEIC) và đá về Index
+    if (window.location.pathname !== '/index.html') {
+        window.location.href = '/index.html';
+    }
+  }
+});
+
+function updateUIForUser(user) {
+    // Logic cập nhật Avatar SVG và tên Mây lên giao diện Navy Blue
+    const userSlot = document.getElementById('user-profile-slot');
+    if(userSlot) {
+        userSlot.innerHTML = `<img src="${user.photoURL}" style="border-radius: 50%; width: 32px; border: 2px solid #ffffff;">`;
+    }
+}
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9kQM31fO6UhoRJtlaPR4H8mzk03jekDbsu8Td6T3fQMi7dnVZ3KgY3-B7lMzObcS0QonY8fEi84d1/pub?gid=0&single=true&output=csv';
 
 const ENCOURAGEMENTS = [
