@@ -131,3 +131,9 @@ export function verify() {
         setTimeout(() => { input.style.borderColor = "var(--border)"; document.getElementById('fc').classList.remove('flipped'); input.value = ""; window.speakWord(sessionWords[currentIdx].word); }, 1500);
     }
 }
+
+export function backToDashboard() {
+    document.getElementById('view-lesson').classList.add('hidden');
+    document.getElementById('view-dashboard').classList.remove('hidden');
+    updateDashboard();
+}
