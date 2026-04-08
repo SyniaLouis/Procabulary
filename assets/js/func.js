@@ -1,15 +1,17 @@
 import * as Core from "./script.js";
 
-window.handleHomeClick = () => {
+// 1. Hàm xử lý nút Home thông minh
+export const handleHomeClick = () => {
     const viewLesson = document.getElementById('view-lesson');
-
+    // Nếu màn hình học đang hiển thị (không có class hidden)
     if (viewLesson && !viewLesson.classList.contains('hidden')) {
-        window.openConfirmModal();
+        window.openConfirmModal(); 
     } else {
         window.location.href = '../index.html'; 
     }
 };
 
+// 2. Các hàm điều khiển giao diện
 window.toggleDarkMode = () => {
     const d = document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', d);
@@ -51,6 +53,7 @@ window.handleEnter = (e) => { if (e.key === "Enter") Core.verify(); };
 window.showSelectionModal = (id) => {
     Core.State.currentLessonId = id;
     const container = document.getElementById('selection-options');
+    if (!container) return;
     container.innerHTML = '';
     const lesson = Core.State.LESSONS_DATABASE[id];
     for (let i = 5; i <= lesson.num; i += 5) {
@@ -82,12 +85,20 @@ window.initSession = (count) => {
     Core.renderFlashcard();
 };
 
+// Đẩy hàm HomeClick ra window để HTML nhận diện được
+window.handleHomeClick = handleHomeClick;
 window.backToDashboard = () => Core.backToDashboard();
 window.closeSelectionModal = () => document.getElementById('selection-modal').classList.add('hidden');
 window.openConfirmModal = () => document.getElementById('confirm-modal').classList.remove('hidden');
 window.closeConfirmModal = () => document.getElementById('confirm-modal').classList.add('hidden');
 
-document.getElementById('exit-btn')?.addEventListener('click', () => {
-    window.closeConfirmModal();
-    window.backToDashboard();
+// Gán sự kiện cho nút thoát trong Modal
+document.addEventListener('DOMContentLoaded', () => {
+    const exitBtn = document.getElementById('exit-btn');
+    if (exitBtn) {
+        exitBtn.onclick = () => {
+            window.closeConfirmModal();
+            window.backToDashboard();
+        };
+    }
 });
