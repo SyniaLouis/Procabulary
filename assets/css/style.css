@@ -1,18 +1,18 @@
-/* Import font Inter chuẩn quốc tế cực kỳ sang trọng */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root { 
-    /* Bảng màu Thương mại (Business) */
-    --primary: #2563eb;       /* Xanh hoàng gia (Nút bấm, thanh tiến độ) */
-    --navy: #0f172a;          /* Xanh Navy đậm (Tiêu đề chính) */
-    --bg: #f8fafc;            /* Xám nền rất nhạt, sang trọng */
-    --text: #334155;          /* Chữ chính (Slate) */
-    --text-muted: #64748b;    /* Chữ phụ, miêu tả */
-    --success: #10b981;       /* Xanh lá báo cáo hoàn thành */
-    --error: #ef4444;         /* Đỏ cảnh báo lỗi sai */
+
+    --primary: #2563eb;     
+    --navy: #0f172a;          
+    --bg: #f8fafc;          
+    --text: #334155;          
+    --text-muted: #64748b;   
+    --success: #10b981;     
+    --error: #ef4444;       
     --warning: #f59e0b;       
     --card-bg: #ffffff;
-    --border: #e2e8f0;        /* Viền tinh tế */
+    --border: #e2e8f0;        
     --input-bg: #ffffff;
     --modal-bg: #ffffff;
 }
@@ -20,7 +20,7 @@
 body.dark-mode {
     --primary: #3b82f6; 
     --navy: #e2e8f0;
-    --bg: #0f172a;            /* Nền tối sâu */
+    --bg: #0f172a;        
     --text: #cbd5e1;
     --text-muted: #94a3b8;
     --card-bg: #1e293b;
