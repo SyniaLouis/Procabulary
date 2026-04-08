@@ -1,3 +1,4 @@
+//firebase conf
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -26,6 +27,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         await syncUserData(user.uid);
         updateUIForUser(user);
+        updateDashboard();
     } else {
         if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
             window.location.href = '/index.html';
@@ -50,6 +52,7 @@ function updateUIForUser(user) {
     }
 }
 
+//database for cards 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9kQM31fO6UhoRJtlaPR4H8mzk03jekDbsu8Td6T3fQMi7dnVZ3KgY3-B7lMzObcS0QonY8fEi84d1/pub?gid=0&single=true&output=csv';
 
 const ENCOURAGEMENTS = [
@@ -84,15 +87,16 @@ let audioConfig = {
     rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0
 };
 
-window.onload = async () => {
+window.addEventListener('load', async () => {
     if (localStorage.getItem('dark-mode') === 'true') {
         document.body.classList.add('dark-mode');
-        document.getElementById('theme-btn').innerText = '☀️';
+        const themeBtn = document.getElementById('theme-btn');
+        if (themeBtn) themeBtn.innerText = '☀️';
     }
     syncAudioButtons();
     await fetchFlashcardsFromSheets();
     updateDashboard();
-};
+});
 
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
@@ -136,7 +140,8 @@ function speakWord(text) {
 function toggleDarkMode() {
     const isDark = document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', isDark);
-    document.getElementById('theme-btn').innerText = isDark ? '☀️' : '🌙';
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) themeBtn.innerText = isDark ? '☀️' : '🌙';
 }
 
 async function fetchFlashcardsFromSheets() {
@@ -354,7 +359,7 @@ function verify() {
         updateProcabScore(false);
         inputEl.style.borderColor = "var(--error)";
         let missingSegment = findLongestErrorSegment(correct, inputVal);
-        let errorMsg = "Chưa chính xác rồi em ơi!";
+        let errorMsg = "Chưa chính xác rồi!";
         if (inputVal.length === correct.length) {
             let typoChar = "";
             for (let i = 0; i < inputVal.length; i++) {
@@ -409,3 +414,16 @@ function openConfirmModal() {
 }
 
 function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); }
+
+//to window instead of firebase
+window.toggleDarkMode = toggleDarkMode;
+window.toggleVoice = toggleVoice;
+window.toggleSpeed = toggleSpeed;
+window.toggleFlip = toggleFlip;
+window.backToDashboard = backToDashboard;
+window.openConfirmModal = openConfirmModal;
+window.closeConfirmModal = closeConfirmModal;
+window.initSession = initSession;
+window.showSelectionModal = showSelectionModal;
+window.closeSelectionModal = closeSelectionModal;
+window.handleEnter = handleEnter;
