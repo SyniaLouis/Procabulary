@@ -5,18 +5,20 @@ import { SHEET_CSV_URL, ENCOURAGEMENTS, SOFT_COLORS } from "./dtb.js";
 import { findLongestErrorSegment } from "./smafed.js";
 import { updateProcabScore, saveFinalProgress } from "./procab.js";
 
-export let currentUserData = { procab_scores: {}, cumulative_progress: {} };
-export let LESSONS_DATABASE = {};
-export let sessionWords = [];
-export let currentLessonId = "";
-export let currentIdx = 0;
-export let attemptsPerWord = 0;
-export let audioConfig = { lang: localStorage.getItem('audio-lang') || 'en-US', rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0 };
+export const State = {
+    currentUserData: { procab_scores: {}, cumulative_progress: {} },
+    LESSONS_DATABASE: {},
+    sessionWords: [],
+    currentLessonId: "",
+    currentIdx: 0,
+    attemptsPerWord: 0,
+    audioConfig: { lang: localStorage.getItem('audio-lang') || 'en-US', rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0 }
+};
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const docSnap = await getDoc(doc(db, "users", user.uid));
-        if (docSnap.exists()) currentUserData = docSnap.data();
+        if (docSnap.exists()) State.currentUserData = docSnap.data();
         updateUIForUser(user);
         updateDashboard();
     } else if (!['/index.html', '/'].includes(window.location.pathname)) {
@@ -40,7 +42,7 @@ async function fetchFlashcardsFromSheets() {
         const res = await fetch(SHEET_CSV_URL);
         const text = await res.text();
         const rows = parseCSV(text);
-        LESSONS_DATABASE = {};
+        State.LESSONS_DATABASE = {};
         rows.slice(1).forEach(cols => {
             if (cols.length >= 4) {
                 if (window.CATEGORY_FILTER && window.CATEGORY_FILTER !== (cols[4] || '').trim()) return;
@@ -49,7 +51,7 @@ async function fetchFlashcardsFromSheets() {
                 for (let i = 0; i < parts.length; i += 3) {
                     if (parts[i] && parts[i+1] && parts[i+2]) words.push({ word: parts[i].trim(), ipa: parts[i+1].trim(), meaning: parts[i+2].trim() });
                 }
-                LESSONS_DATABASE[cols[0]] = { title: cols[1], words: words, num: parseInt(cols[3]) };
+                State.LESSONS_DATABASE[cols[0]] = { title: cols[1], words: words, num: parseInt(cols[3]) };
             }
         });
     } catch (e) { console.error(e); }
@@ -74,9 +76,9 @@ export function updateDashboard() {
     const grid = document.getElementById('dashboard-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    const progress = currentUserData.cumulative_progress || {};
-    Object.keys(LESSONS_DATABASE).forEach(id => {
-        const d = LESSONS_DATABASE[id];
+    const progress = State.currentUserData.cumulative_progress || {};
+    Object.keys(State.LESSONS_DATABASE).forEach(id => {
+        const d = State.LESSONS_DATABASE[id];
         const count = progress[id] || 0;
         const target = d.num * 5;
         const p = Math.min(Math.floor((count / target) * 100), 100);
@@ -89,14 +91,14 @@ export function updateDashboard() {
 }
 
 export function renderFlashcard() {
-    attemptsPerWord = 0;
-    const item = sessionWords[currentIdx];
+    State.attemptsPerWord = 0;
+    const item = State.sessionWords[State.currentIdx];
     const container = document.getElementById('lesson-content');
     if (item.type === 'special') {
         const q = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
         const c = SOFT_COLORS[Math.floor(Math.random() * SOFT_COLORS.length)];
         container.innerHTML = `<div class="flashcard special-card"><div class="card-face" style="background:${c}">${q}</div></div>`;
-        setTimeout(() => { currentIdx++; if (currentIdx < sessionWords.length) renderFlashcard(); else finish(); }, 2500);
+        setTimeout(() => { State.currentIdx++; if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish(); }, 2500);
     } else {
         container.innerHTML = `<div class="flashcard" id="fc" onclick="window.toggleFlip()"><div class="flashcard-inner">
             <div class="card-face"><div class="word-text">${item.word}</div><div class="ipa-text">/${item.ipa}/</div></div>
@@ -109,26 +111,26 @@ export function renderFlashcard() {
 }
 
 export async function finish() {
-    const count = sessionWords.filter(w => w.type === 'normal').length;
-    await saveFinalProgress(currentLessonId, count, currentUserData, LESSONS_DATABASE);
+    const count = State.sessionWords.filter(w => w.type === 'normal').length;
+    await saveFinalProgress(State.currentLessonId, count, State.currentUserData, State.LESSONS_DATABASE);
     document.getElementById('lesson-content').innerHTML = `<div style="text-align:center"><h2>🎉 Hoàn thành!</h2><button onclick="window.backToDashboard()">QUAY LẠI</button></div>`;
 }
 
 export function verify() {
     const input = document.getElementById('fc-input');
-    const correct = sessionWords[currentIdx].word.toLowerCase();
+    const correct = State.sessionWords[State.currentIdx].word.toLowerCase();
     const val = input.value.trim().toLowerCase();
     if (val === correct) {
-        updateProcabScore(true, currentLessonId, sessionWords[currentIdx].originalIndex, currentUserData);
-        currentIdx++;
-        if (currentIdx < sessionWords.length) renderFlashcard(); else finish();
+        updateProcabScore(true, State.currentLessonId, State.sessionWords[State.currentIdx].originalIndex, State.currentUserData);
+        State.currentIdx++;
+        if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish();
     } else {
-        attemptsPerWord++;
-        updateProcabScore(false, currentLessonId, sessionWords[currentIdx].originalIndex, currentUserData);
+        State.attemptsPerWord++;
+        updateProcabScore(false, State.currentLessonId, State.sessionWords[State.currentIdx].originalIndex, State.currentUserData);
         input.style.borderColor = "var(--error)";
         let seg = findLongestErrorSegment(correct, val);
-        document.getElementById('fc-error').innerText = attemptsPerWord >= 2 ? `Gợi ý: Chú ý chữ "${seg.toUpperCase()}"` : "Chưa chính xác!";
-        setTimeout(() => { input.style.borderColor = "var(--border)"; document.getElementById('fc').classList.remove('flipped'); input.value = ""; window.speakWord(sessionWords[currentIdx].word); }, 1500);
+        document.getElementById('fc-error').innerText = State.attemptsPerWord >= 2 ? `Gợi ý: Chú ý chữ "${seg.toUpperCase()}"` : "Chưa chính xác!";
+        setTimeout(() => { input.style.borderColor = "var(--border)"; document.getElementById('fc').classList.remove('flipped'); input.value = ""; window.speakWord(State.sessionWords[State.currentIdx].word); }, 1500);
     }
 }
 
