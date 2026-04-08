@@ -28,7 +28,6 @@
             display: block;
         }
 
-       
         .hero-section {
             background: linear-gradient(135deg, var(--brand-navy) 0%, #1e293b 100%);
             color: white;
@@ -49,7 +48,6 @@
             line-height: 1.6;
         }
 
-       
         .features-section {
             display: flex;
             justify-content: center;
@@ -82,12 +80,17 @@
             line-height: 1.5;
         }
 
-
         .courses-section {
             max-width: 800px;
             margin: 60px auto 80px;
             padding: 0 20px;
         }
+        
+        /* Class hỗ trợ ẩn phần tử nhanh */
+        .hidden {
+            display: none !important;
+        }
+
         .section-title {
             text-align: center;
             color: var(--brand-navy);
@@ -135,7 +138,6 @@
             line-height: 1.5; 
         }
 
- 
         footer {
             text-align: center;
             padding: 30px;
@@ -151,67 +153,66 @@
         <h1>Procabulary Engine</h1>
         <p>Hệ thống Flashcard thông minh ứng dụng thuật toán phân cấp gợi ý (Progressive Hinting), thiết kế chuyên biệt để chinh phục Tiếng Anh học thuật.</p>
         <div id="auth-container" style="text-align: center; margin-top: 25px;">
-    <button id="login-btn" style="background: var(--brand-blue); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Inter', sans-serif;">
-        Đăng nhập bằng Google
-    </button>
-    
-    <div id="user-info" class="hidden" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; display: inline-block;">
-        <span id="user-name" style="color: white; font-weight: 600; margin-right: 15px;"></span>
-        <button id="logout-btn" style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
-            Đăng xuất
-        </button>
-    </div>
-</div>
+            <button id="login-btn" style="background: var(--brand-blue); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Inter', sans-serif;">
+                Đăng nhập và học ngay !
+            </button>
+            
+            <div id="user-info" class="hidden" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; display: inline-block;">
+                <span id="user-name" style="color: white; font-weight: 600; margin-right: 15px;"></span>
+                <button id="logout-btn" style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                    Đăng xuất
+                </button>
+            </div>
+        </div>
 
-<script type="module">
- 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-  
-  const firebaseConfig = {
-    apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
-    authDomain: "procabulary-engine.firebaseapp.com",
-    projectId: "procabulary-engine",
-    storageBucket: "procabulary-engine.firebasestorage.app",
-    messagingSenderId: "271617165131",
-    appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
-    measurementId: "G-NCL1PT38MN"
-  };
+            const firebaseConfig = {
+                apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
+                authDomain: "procabulary-engine.firebaseapp.com",
+                projectId: "procabulary-engine",
+                storageBucket: "procabulary-engine.firebasestorage.app",
+                messagingSenderId: "271617165131",
+                appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
+                measurementId: "G-NCL1PT38MN"
+            };
 
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
+            document.getElementById('login-btn').addEventListener('click', () => {
+                signInWithPopup(auth, provider).catch(error => console.error("Lỗi đăng nhập:", error));
+            });
 
- 
-  document.getElementById('login-btn').addEventListener('click', () => {
-      signInWithPopup(auth, provider).catch(error => console.error("Lỗi đăng nhập:", error));
-  });
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                signOut(auth);
+            });
 
- 
-  document.getElementById('logout-btn').addEventListener('click', () => {
-      signOut(auth);
-  });
+            onAuthStateChanged(auth, (user) => {
+                const loginBtn = document.getElementById('login-btn');
+                const userInfo = document.getElementById('user-info');
+                const userName = document.getElementById('user-name');
+                const coursesSection = document.getElementById('courses-container');
 
- 
-  onAuthStateChanged(auth, (user) => {
-      const loginBtn = document.getElementById('login-btn');
-      const userInfo = document.getElementById('user-info');
-      const userName = document.getElementById('user-name');
-
-      if (user) {
-      
-          loginBtn.style.display = 'none';
-          userInfo.classList.remove('hidden');
-          userName.innerText = "Chào học viên, " + user.displayName + " 🎓";
-      } else {
-         
-          loginBtn.style.display = 'inline-block';
-          userInfo.classList.add('hidden');
-      }
-  });
-</script>
+                if (user) {
+                    loginBtn.style.display = 'none';
+                    userInfo.classList.remove('hidden');
+                    userName.innerText = "Chào học viên, " + user.displayName + " 🎓";
+                    
+                    // Hiện danh sách khóa học khi đã đăng nhập
+                    if (coursesSection) coursesSection.classList.remove('hidden');
+                } else {
+                    loginBtn.style.display = 'inline-block';
+                    userInfo.classList.add('hidden');
+                    
+                    // Ẩn danh sách khóa học khi chưa đăng nhập
+                    if (coursesSection) coursesSection.classList.add('hidden');
+                }
+            });
+        </script>
     </div>
 
     <div class="features-section">
@@ -225,10 +226,9 @@
         </div>
     </div>
 
-    <div class="courses-section">
+    <div id="courses-container" class="courses-section hidden">
         <h2 class="section-title">Lựa chọn lộ trình của bạn</h2>
         <div class="category-grid">
-            
             <a href="IELTS/index.html" class="cat-card">
                 <div class="cat-icon">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -239,8 +239,7 @@
                 <div class="cat-title">Từ vựng IELTS</div>
                 <div class="cat-desc">Học từ vựng nền tảng và nâng cao với các chủ đề luyện thi chuyên sâu.</div>
             </a>
-            
-            </div>
+        </div>
     </div>
 
     <footer>
