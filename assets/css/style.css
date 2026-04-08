@@ -3,16 +3,16 @@
 
 :root { 
 
-    --primary: #2563eb;     
-    --navy: #0f172a;          
-    --bg: #f8fafc;          
-    --text: #334155;          
-    --text-muted: #64748b;   
-    --success: #10b981;     
-    --error: #ef4444;       
+    --primary: #2563eb;    
+    --navy: #0f172a;        
+    --bg: #f8fafc;           
+    --text: #334155;      
+    --text-muted: #64748b;  
+    --success: #10b981;      
+    --error: #ef4444;      
     --warning: #f59e0b;       
     --card-bg: #ffffff;
-    --border: #e2e8f0;        
+    --border: #e2e8f0;      
     --input-bg: #ffffff;
     --modal-bg: #ffffff;
 }
@@ -20,7 +20,7 @@
 body.dark-mode {
     --primary: #3b82f6; 
     --navy: #e2e8f0;
-    --bg: #0f172a;        
+    --bg: #0f172a;            /* Nền tối sâu */
     --text: #cbd5e1;
     --text-muted: #94a3b8;
     --card-bg: #1e293b;
@@ -85,7 +85,7 @@ body {
     border: 1px solid var(--border);
     width: 40px;
     height: 40px;
-    border-radius: 8px; /* Chỉnh vuông vức hơn */
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
