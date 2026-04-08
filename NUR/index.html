@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luyện từ vựng điều dưỡng - Procabulary Engine</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <div class="header-bar">
+        <div class="icon-btn" onclick="handleHomeClick()" style="position: absolute; left: 0; cursor: pointer;" title="Trang chủ">🏠</div>
+        
+        <h2 id="dynamic-title">Hệ thống thẻ ghi nhớ</h2>
+        
+        <div class="header-btns">
+            <div id="user-profile-slot" style="display: flex; align-items: center; justify-content: center; margin-right: 10px;"></div>
+            
+            <div class="icon-btn" id="speed-btn" onclick="toggleSpeed()" title="Tốc độ đọc">1.0x</div>
+            <div class="icon-btn" id="voice-btn" onclick="toggleVoice()" title="Giọng đọc">US</div>
+            <div class="icon-btn" id="theme-btn" onclick="toggleDarkMode()" title="Chế độ tối">🌙</div>
+        </div>
+    </div>
+
+    <div id="view-dashboard">
+        <div id="dashboard-grid" class="dashboard-grid"></div>
+    </div>
+
+    <div id="view-lesson" class="hidden">
+        <div id="lesson-content"></div>
+    </div>
+</div>
+
+<div id="selection-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h3>Chọn số lượng từ ôn tập 🎯</h3>
+        <div id="selection-options" class="option-grid"></div>
+        <button class="back-btn" onclick="closeSelectionModal()" style="margin-top:20px">HỦY BỎ</button>
+    </div>
+</div>
+
+<div id="confirm-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <h3>Xác nhận thoát 🚪</h3>
+        <p style="margin-top: 10px; color: #64748b;">Tiến độ phiên học này sẽ không được lưu nếu em thoát ngay bây giờ.</p>
+        <div style="display:flex; gap:10px; margin-top:25px">
+            <button style="background:var(--primary); flex:1; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="closeConfirmModal()">LÀM TIẾP</button>
+            <button style="background:var(--error); flex:1; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold;" id="exit-btn">THOÁT</button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    window.CATEGORY_FILTER = 'NUR';
+</script>
+
+<script type="module" src="../assets/js/func.js"></script>
+
+</body>
+</html>
