@@ -1,5 +1,15 @@
 import * as Core from "./script.js";
 
+window.handleHomeClick = () => {
+    const viewLesson = document.getElementById('view-lesson');
+
+    if (viewLesson && !viewLesson.classList.contains('hidden')) {
+        window.openConfirmModal();
+    } else {
+        window.location.href = '../index.html'; 
+    }
+};
+
 window.toggleDarkMode = () => {
     const d = document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', d);
