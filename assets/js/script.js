@@ -1,10 +1,8 @@
-<script type="module">
- 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-  
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
     authDomain: "procabulary-engine.firebaseapp.com",
     projectId: "procabulary-engine",
@@ -12,36 +10,46 @@
     messagingSenderId: "271617165131",
     appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
     measurementId: "G-NCL1PT38MN"
-  };
+};
 
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-auth.js";
+let currentUserData = {
+    procab_scores: {},
+    cumulative_progress: {}
+};
 
-const auth = getAuth();
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    // 1. Nếu đã đăng nhập: Hiển thị Profile & Avatar trên Navbar
-    console.log("Chào mừng Mây:", user.displayName);
-    updateUIForUser(user);
-  } else {
-    // 2. Nếu chưa đăng nhập: Chặn truy cập trang học (IELTS/TOEIC) và đá về Index
-    if (window.location.pathname !== '/index.html') {
-        window.location.href = '/index.html';
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        await syncUserData(user.uid);
+        updateUIForUser(user);
+    } else {
+        if (window.location.pathname !== '/index.html' && window.location.pathname !== '/') {
+            window.location.href = '/index.html';
+        }
     }
-  }
 });
 
+async function syncUserData(uid) {
+    const userRef = doc(db, "users", uid);
+    const docSnap = await getDoc(userRef);
+    if (docSnap.exists()) {
+        currentUserData = docSnap.data();
+    } else {
+        await setDoc(userRef, currentUserData);
+    }
+}
+
 function updateUIForUser(user) {
-    // Logic cập nhật Avatar SVG và tên Mây lên giao diện Navy Blue
     const userSlot = document.getElementById('user-profile-slot');
-    if(userSlot) {
+    if (userSlot) {
         userSlot.innerHTML = `<img src="${user.photoURL}" style="border-radius: 50%; width: 32px; border: 2px solid #ffffff;">`;
     }
 }
+
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS9kQM31fO6UhoRJtlaPR4H8mzk03jekDbsu8Td6T3fQMi7dnVZ3KgY3-B7lMzObcS0QonY8fEi84d1/pub?gid=0&single=true&output=csv';
 
 const ENCOURAGEMENTS = [
@@ -69,7 +77,7 @@ let sessionWords = [];
 let currentLessonId = "";
 let currentIdx = 0;
 let isSpeakingLocked = false;
-let attemptsPerWord = 0; 
+let attemptsPerWord = 0;
 
 let audioConfig = {
     lang: localStorage.getItem('audio-lang') || 'en-US',
@@ -111,8 +119,10 @@ function toggleSpeed() {
 }
 
 function syncAudioButtons() {
-    document.getElementById('voice-btn').innerText = (audioConfig.lang === 'en-US') ? 'US' : 'UK';
-    document.getElementById('speed-btn').innerText = audioConfig.rate.toFixed(1) + 'x';
+    const voiceBtn = document.getElementById('voice-btn');
+    const speedBtn = document.getElementById('speed-btn');
+    if (voiceBtn) voiceBtn.innerText = (audioConfig.lang === 'en-US') ? 'US' : 'UK';
+    if (speedBtn) speedBtn.innerText = audioConfig.rate.toFixed(1) + 'x';
 }
 
 function speakWord(text) {
@@ -137,10 +147,9 @@ async function fetchFlashcardsFromSheets() {
         let currentRow = [];
         let currentCell = '';
         let insideQuotes = false;
-        
         for (let i = 0; i < csvText.length; i++) {
             const char = csvText[i];
-            const nextChar = csvText[i+1];
+            const nextChar = csvText[i + 1];
             if (char === '"' && insideQuotes && nextChar === '"') { currentCell += '"'; i++; }
             else if (char === '"') { insideQuotes = !insideQuotes; }
             else if (char === ',' && !insideQuotes) { currentRow.push(currentCell.trim()); currentCell = ''; }
@@ -149,40 +158,36 @@ async function fetchFlashcardsFromSheets() {
             } else { currentCell += char; }
         }
         if (currentRow.length > 0 || currentCell !== '') { currentRow.push(currentCell.trim()); rows.push(currentRow); }
-        
         LESSONS_DATABASE = {};
         rows.slice(1).forEach(cols => {
             if (cols.length >= 4) {
                 const id = cols[0];
-                
-                // Logic lọc dữ liệu theo môn học (Giả định cột thứ 5 - index 4 là Category)
                 const category = cols[4] ? cols[4].trim() : '';
-                if (window.CATEGORY_FILTER && window.CATEGORY_FILTER !== category) {
-                    return; // Bỏ qua nếu không đúng môn đang chọn
-                }
-
+                if (window.CATEGORY_FILTER && window.CATEGORY_FILTER !== category) return;
                 const vocabParts = cols[2].split(',');
                 const wordsArray = [];
                 for (let i = 0; i < vocabParts.length; i += 3) {
-                    if (vocabParts[i] && vocabParts[i+1] && vocabParts[i+2]) {
-                        wordsArray.push({ word: vocabParts[i].trim(), ipa: vocabParts[i+1].trim(), meaning: vocabParts[i+2].trim() });
+                    if (vocabParts[i] && vocabParts[i + 1] && vocabParts[i + 2]) {
+                        wordsArray.push({ word: vocabParts[i].trim(), ipa: vocabParts[i + 1].trim(), meaning: vocabParts[i + 2].trim() });
                     }
                 }
                 LESSONS_DATABASE[id] = { title: cols[1], words: wordsArray, num: parseInt(cols[3]) };
             }
         });
-    } catch (error) { console.error("Lỗi dữ liệu: ", error); }
+    } catch (error) { console.error(error); }
 }
 
 function updateDashboard() {
-    document.getElementById('dynamic-title').innerText = window.CATEGORY_FILTER ? `Từ vựng ${window.CATEGORY_FILTER}` : "Hệ thống thẻ ghi nhớ";
+    const titleEl = document.getElementById('dynamic-title');
+    if (titleEl) titleEl.innerText = window.CATEGORY_FILTER ? `Từ vựng ${window.CATEGORY_FILTER}` : "Hệ thống thẻ ghi nhớ";
     const grid = document.getElementById('dashboard-grid');
+    if (!grid) return;
     grid.innerHTML = '';
-    const progressData = JSON.parse(localStorage.getItem('fc_cumulative_progress')) || {};
+    const progressData = currentUserData.cumulative_progress || {};
     Object.keys(LESSONS_DATABASE).forEach(id => {
         const data = LESSONS_DATABASE[id];
         const currentCount = progressData[id] || 0;
-        const targetCount = data.num * 5; 
+        const targetCount = data.num * 5;
         const percent = Math.min(Math.floor((currentCount / targetCount) * 100), 100);
         const isDone = percent >= 100;
         const card = document.createElement('div');
@@ -219,8 +224,7 @@ function closeSelectionModal() { document.getElementById('selection-modal').clas
 function initSession(count) {
     closeSelectionModal();
     const allWords = [...LESSONS_DATABASE[currentLessonId].words];
-    let procabData = JSON.parse(localStorage.getItem('fc_procab_scores')) || {};
-    let lessonScores = procabData[currentLessonId] || {};
+    const lessonScores = currentUserData.procab_scores[currentLessonId] || {};
     let wordsWithScores = allWords.map((word, idx) => ({
         ...word,
         originalIndex: idx,
@@ -259,7 +263,7 @@ function findLongestErrorSegment(correctWord, lastInput) {
     let longestError = "";
     let currentError = "";
     for (let i = 0; i < correct.length; i++) {
-        if (!matched[i]) { currentError += correct[i]; } 
+        if (!matched[i]) currentError += correct[i];
         else {
             if (currentError.length > longestError.length) longestError = currentError;
             currentError = "";
@@ -270,12 +274,11 @@ function findLongestErrorSegment(correctWord, lastInput) {
 }
 
 function renderFlashcard() {
-    attemptsPerWord = 0; 
+    attemptsPerWord = 0;
     const item = sessionWords[currentIdx];
     const container = document.getElementById('lesson-content');
     const titleEl = document.getElementById('dynamic-title');
     titleEl.innerText = LESSONS_DATABASE[currentLessonId].title;
-
     if (item.type === 'special') {
         const randomQuote = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
         const randomColor = SOFT_COLORS[Math.floor(Math.random() * SOFT_COLORS.length)];
@@ -312,7 +315,7 @@ function toggleFlip() {
     if (isSpeakingLocked) return;
     if (fc && !fc.classList.contains('special-card')) {
         fc.classList.toggle('flipped');
-        if(fc.classList.contains('flipped')) {
+        if (fc.classList.contains('flipped')) {
             speakWord(sessionWords[currentIdx].word);
             setTimeout(() => document.getElementById('fc-input')?.focus(), 300);
         }
@@ -321,17 +324,19 @@ function toggleFlip() {
 
 function handleEnter(e) { if (e.key === "Enter") verify(); }
 
-function updateProcabScore(isCorrect) {
+async function updateProcabScore(isCorrect) {
     let wordItem = sessionWords[currentIdx];
-    let procabData = JSON.parse(localStorage.getItem('fc_procab_scores')) || {};
-    if (!procabData[currentLessonId]) procabData[currentLessonId] = {};
+    if (!currentUserData.procab_scores[currentLessonId]) currentUserData.procab_scores[currentLessonId] = {};
     if (isCorrect) {
-        procabData[currentLessonId][wordItem.originalIndex] = 0;
+        currentUserData.procab_scores[currentLessonId][wordItem.originalIndex] = 0;
     } else {
-        let currentMistakes = procabData[currentLessonId][wordItem.originalIndex] || 0;
-        procabData[currentLessonId][wordItem.originalIndex] = currentMistakes + 1;
+        let currentMistakes = currentUserData.procab_scores[currentLessonId][wordItem.originalIndex] || 0;
+        currentUserData.procab_scores[currentLessonId][wordItem.originalIndex] = currentMistakes + 1;
     }
-    localStorage.setItem('fc_procab_scores', JSON.stringify(procabData));
+    const user = auth.currentUser;
+    if (user) {
+        await setDoc(doc(db, "users", user.uid), currentUserData, { merge: true });
+    }
 }
 
 function verify() {
@@ -339,20 +344,17 @@ function verify() {
     const inputVal = inputEl.value.trim().toLowerCase();
     const correct = sessionWords[currentIdx].word.toLowerCase();
     const err = document.getElementById('fc-error');
-
     if (inputVal === correct) {
         updateProcabScore(true);
         currentIdx++;
         if (currentIdx < sessionWords.length) renderFlashcard();
         else finish();
     } else {
-        attemptsPerWord++; 
+        attemptsPerWord++;
         updateProcabScore(false);
         inputEl.style.borderColor = "var(--error)";
-        
         let missingSegment = findLongestErrorSegment(correct, inputVal);
         let errorMsg = "Chưa chính xác rồi em ơi!";
-        
         if (inputVal.length === correct.length) {
             let typoChar = "";
             for (let i = 0; i < inputVal.length; i++) {
@@ -360,13 +362,9 @@ function verify() {
             }
             errorMsg = `Cẩn thận chữ cái "${typoChar.toUpperCase()}" bị nhầm nhé! 🍡`;
         } else {
-            if (attemptsPerWord >= 2 && missingSegment !== "") {
-                errorMsg = `Gợi ý: Chú ý chữ cái "${missingSegment.toUpperCase()}" nha! ✨`;
-            } else {
-                errorMsg = "Chưa đúng rồi, em thử nhớ lại xem! 🧠";
-            }
+            if (attemptsPerWord >= 2 && missingSegment !== "") errorMsg = `Gợi ý: Chú ý chữ cái "${missingSegment.toUpperCase()}" nha! ✨`;
+            else errorMsg = "Chưa đúng rồi, em thử nhớ lại xem! 🧠";
         }
-
         err.innerText = errorMsg;
         setTimeout(() => {
             err.innerText = "";
@@ -378,14 +376,16 @@ function verify() {
     }
 }
 
-function finish() {
+async function finish() {
     document.getElementById('dynamic-title').innerText = "Kết quả phiên học";
-    let cumulativeProgress = JSON.parse(localStorage.getItem('fc_cumulative_progress')) || {};
     const wordsInSession = sessionWords.filter(w => w.type === 'normal').length;
-    let currentScore = cumulativeProgress[currentLessonId] || 0;
-    const targetScore = LESSONS_DATABASE[currentLessonId].num * 5; 
-    cumulativeProgress[currentLessonId] = Math.min(currentScore + wordsInSession, targetScore);
-    localStorage.setItem('fc_cumulative_progress', JSON.stringify(cumulativeProgress));
+    let currentScore = currentUserData.cumulative_progress[currentLessonId] || 0;
+    const targetScore = LESSONS_DATABASE[currentLessonId].num * 5;
+    currentUserData.cumulative_progress[currentLessonId] = Math.min(currentScore + wordsInSession, targetScore);
+    const user = auth.currentUser;
+    if (user) {
+        await setDoc(doc(db, "users", user.uid), currentUserData, { merge: true });
+    }
     document.getElementById('lesson-content').innerHTML = `
         <div style="text-align:center; padding: 20px 0;">
             <div style="font-size: 4rem;">🎉</div>
@@ -405,6 +405,7 @@ function backToDashboard() {
 function openConfirmModal() {
     document.getElementById('confirm-modal').classList.remove('hidden');
     const exitBtn = document.getElementById('exit-btn');
-    exitBtn.onclick = () => { closeConfirmModal(); backToDashboard(); };
+    if (exitBtn) exitBtn.onclick = () => { closeConfirmModal(); backToDashboard(); };
 }
+
 function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); }
