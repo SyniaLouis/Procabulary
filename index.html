@@ -158,6 +158,7 @@
             </button>
             
             <div id="user-info" class="hidden" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; display: inline-block;">
+                <img id="user-avatar" src="" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; margin-right: 12px; border: 2px solid var(--brand-blue); object-fit: cover;">
                 <span id="user-name" style="color: white; font-weight: 600; margin-right: 15px;"></span>
                 <button id="logout-btn" style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
                     Đăng xuất
@@ -191,27 +192,28 @@
                 signOut(auth);
             });
 
-            onAuthStateChanged(auth, (user) => {
-                const loginBtn = document.getElementById('login-btn');
-                const userInfo = document.getElementById('user-info');
-                const userName = document.getElementById('user-name');
-                const coursesSection = document.getElementById('courses-container');
+           onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('login-btn');
+    const userInfo = document.getElementById('user-info');
+    const userName = document.getElementById('user-name');
+    const userAvatar = document.getElementById('user-avatar'); // Lấy element ảnh
+    const coursesSection = document.getElementById('courses-container');
 
-                if (user) {
-                    loginBtn.style.display = 'none';
-                    userInfo.classList.remove('hidden');
-                    userName.innerText = "Chào học viên, " + user.displayName + " 🎓";
-                    
-                    // Hiện danh sách khóa học khi đã đăng nhập
-                    if (coursesSection) coursesSection.classList.remove('hidden');
-                } else {
-                    loginBtn.style.display = 'inline-block';
-                    userInfo.classList.add('hidden');
-                    
-                    // Ẩn danh sách khóa học khi chưa đăng nhập
-                    if (coursesSection) coursesSection.classList.add('hidden');
-                }
-            });
+    if (user) {
+        loginBtn.style.display = 'none';
+        userInfo.classList.remove('hidden');
+        
+        // Gán dữ liệu từ Firebase vào UI
+        userName.innerText = user.displayName; 
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/35'; // Hiện ảnh từ Google hoặc ảnh mặc định
+        
+        if (coursesSection) coursesSection.classList.remove('hidden');
+    } else {
+        loginBtn.style.display = 'inline-block';
+        userInfo.classList.add('hidden');
+        if (coursesSection) coursesSection.classList.add('hidden');
+    }
+});
         </script>
     </div>
 
