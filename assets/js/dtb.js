@@ -18,4 +18,5 @@ export const ENCOURAGEMENTS = [
     "Hoàn thành xuất sắc! Em xứng đáng nhận điểm 10 cho sự nỗ lực! 💯🧁"
 ];
 
-export const SOFT_COLORS = ['#e8f4fd', '#f0f9eb', '#fff9db', '#fff0f0', '#f3f0ff', '#e6fffb', '#fff2e8'];
+export const SOFT_COLORS = ['#1e293b', // Navy Blue
+    '#334155', '#0f172a', '#1e1b4b', '#e8f4fd', '#f0f9eb', '#fff9db', '#fff0f0', '#f3f0ff', '#e6fffb', '#fff2e8'];
