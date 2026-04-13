@@ -198,7 +198,8 @@ export function verify() {
                 errorDiv.innerHTML = '';
                 
                 if (flashcard) flashcard.classList.remove('flipped');
-
+                input.blur();
+                
                 State.attemptsPerWord = 0;
                 window.speakWord(target.word);
             }, 2000);
