@@ -128,7 +128,7 @@ export function renderFlashcard() {
             State.currentIdx++; 
             if (State.currentIdx < State.sessionWords.length) renderFlashcard(); 
             else finish(); 
-        }, 3000); // Tăng lên 3s để Mây kịp đọc lời động viên nhé
+        }, 3000);
     } else {
         container.innerHTML = `
             <div class="flashcard" id="fc" onclick="window.toggleFlip()">
@@ -153,11 +153,12 @@ export function renderFlashcard() {
 export function verify() {
     const input = document.getElementById('fc-input');
     const errorDiv = document.getElementById('fc-error');
-    if (!input || input.disabled) return; // Ngăn chặn gõ khi đang xử lý
-
+    const flashcard = document.getElementById('fc');
     const target = State.sessionWords[State.currentIdx];
     const correct = target.word.toLowerCase();
     const val = input.value.trim().toLowerCase();
+
+    if (!input || input.disabled) return;
 
     if (val === correct) {
         updateProcabScore(true, State.currentLessonId, target.originalIndex, State.currentUserData);
@@ -168,32 +169,40 @@ export function verify() {
         State.attemptsPerWord++;
         updateProcabScore(false, State.currentLessonId, target.originalIndex, State.currentUserData);
         
-        input.disabled = true; // Khóa input tạm thời
         input.style.borderColor = "var(--error)";
-        
+        input.disabled = true; // Khóa input 
+
         const feedback = getSmartFeedback(correct, val);
-        renderVisualFeedback(feedback.diffMap, errorDiv);
 
-        if (State.attemptsPerWord >= 2) {
-            const accuracyInfo = document.createElement('div');
-            accuracyInfo.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-top: 5px; font-weight: 500;";
-            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}%`;
-            errorDiv.appendChild(accuracyInfo);
+        if (State.attemptsPerWord === 1) {
+            // Lần sai thứ 1
+            renderVisualFeedback(feedback.diffMap, errorDiv, feedback.accuracy);
+            
+            setTimeout(() => {
+                input.disabled = false;
+                input.style.borderColor = "rgba(255,255,255,0.2)";
+                input.value = "";
+                errorDiv.innerHTML = ''; 
+                input.focus();
+            }, 2000);
+            
+        } else if (State.attemptsPerWord >= 2) {
+            // Lần sai thứ 2
+            renderCorrectWordHighlight(feedback.diffMap, errorDiv);
+            setTimeout(() => {
+                input.disabled = false;
+                input.style.borderColor = "rgba(255,255,255,0.2)";
+                input.value = "";
+                errorDiv.innerHTML = '';
+                if (flashcard) flashcard.classList.remove('flipped');
+                
+                window.speakWord(target.word);
+            }, 2000);
+            State.attemptsPerWord = 0;
         }
-
-        setTimeout(() => {
-            input.disabled = false;
-            input.style.borderColor = "rgba(255,255,255,0.2)";
-            document.getElementById('fc').classList.remove('flipped');
-            input.value = "";
-            errorDiv.innerHTML = ''; 
-            input.focus();
-            window.speakWord(target.word);
-        }, 2000);
     }
 }
-
-function renderVisualFeedback(diffMap, targetEl) {
+function renderVisualFeedback(diffMap, targetEl, accuracy) {
     targetEl.innerHTML = '';
     diffMap.forEach(item => {
         const span = document.createElement('span');
@@ -202,6 +211,25 @@ function renderVisualFeedback(diffMap, targetEl) {
         span.setAttribute('data-label', item.label);
         targetEl.appendChild(span);
     });
+    
+    const accDiv = document.createElement('div');
+    accDiv.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-top: 5px;";
+    accDiv.innerText = `Chính xác: ${accuracy}%`;
+    targetEl.appendChild(accDiv);
+}
+function renderCorrectWordHighlight(diffMap, targetEl) {
+    targetEl.innerHTML = '';
+    const wordContainer = document.createElement('div');
+    
+    diffMap.forEach(item => {
+        if (item.type !== 'extra') {
+            const span = document.createElement('span');
+            span.className = `diff-char ${item.type === 'correct' ? 'diff-correct' : 'diff-' + item.type}`;
+            span.innerText = item.char;
+            wordContainer.appendChild(span);
+        }
+    });
+    targetEl.appendChild(wordContainer);
 }
 
 export async function finish() {
