@@ -101,7 +101,17 @@ export function renderFlashcard() {
     if (item.type === 'special') {
         const q = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
         const c = SOFT_COLORS[Math.floor(Math.random() * SOFT_COLORS.length)];
-        container.innerHTML = `<div class="flashcard special-card"><div class="card-face" style="background:${c}">${q}</div></div>`;
+        container.innerHTML = `
+    <div class="flashcard" id="fc" onclick="window.toggleFlip()">
+        <div class="flashcard-inner">
+            <div class="card-face">
+                <div class="word-text">${item.word}</div>
+                <div class="ipa-text">/${item.ipa}/</div>
+            </div>
+            <div class="card-face card-back" onclick="event.stopPropagation()">
+                </div>
+        </div>
+    </div>`;
         setTimeout(() => { State.currentIdx++; if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish(); }, 2500);
     } else {
         container.innerHTML = `
