@@ -42,11 +42,22 @@ window.closeSelectionModal = () => {
 };
 
 window.startLesson = (count) => {
-    const lesson = State.LESSONS_DATABASE[State.currentLessonId];
+   const lesson = State.LESSONS_DATABASE[State.currentLessonId];
     if (!lesson) return;
 
-    let pool = [...lesson.words].sort(() => Math.random() - 0.5).slice(0, count);
+    const lessonScores = State.currentUserData.procab_scores[State.currentLessonId] || {};
+
+    const scoredWords = lesson.words.map(w => ({
+        ...w,
+        mistakes: lessonScores[w.originalIndex] || 0
+    }));
+
+    const sortedWords = scoredWords.sort((a, b) => b.mistakes - a.mistakes);
+
+    let pool = sortedWords.slice(0, count);
     
+    pool = pool.sort(() => Math.random() - 0.5);
+
     State.sessionWords = [];
     pool.forEach((w, idx) => {
         State.sessionWords.push({ ...w, type: 'normal' });
