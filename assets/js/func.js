@@ -47,3 +47,27 @@ window.speakWord = (text) => {
     msg.rate = State.audioConfig.rate;
     window.speechSynthesis.speak(msg);
 };
+
+window.handleHomeClick = () => {
+    const isLearning = !document.getElementById('view-lesson').classList.contains('hidden');
+    
+    if (isLearning) {
+        const confirmModal = document.getElementById('confirm-modal');
+        if (confirmModal) confirmModal.style.display = 'flex';
+    } else {
+        window.location.href = '../index.html';
+    }
+};
+window.closeConfirmModal = () => {
+    const confirmModal = document.getElementById('confirm-modal');
+    if (confirmModal) confirmModal.style.display = 'none';
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const exitBtn = document.getElementById('exit-btn');
+    if (exitBtn) {
+        exitBtn.onclick = () => {
+            window.location.href = '../index.html';
+        };
+    }
+});
