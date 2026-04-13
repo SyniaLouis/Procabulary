@@ -105,12 +105,16 @@ export async function updateDashboard() {
         createBtn.className = 'lesson-card';
         createBtn.style.border = '2px dashed var(--primary)';
         createBtn.onclick = window.openCreateModal;
-        createBtn.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p>Tối đa 100 từ</p>`;
+        createBtn.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p>Tối đa 50 từ</p>`;
         grid.appendChild(createBtn);
 
         // Chị đã bỏ dòng "await import" dư thừa ở đây nhé
         const customs = await getCustomLessons();
-        customs.forEach(c => { State.LESSONS_DATABASE[c.id] = c; });
+        customs.forEach(c => { 
+            if (!State.LESSONS_DATABASE[c.id]) {
+                State.LESSONS_DATABASE[c.id] = c;
+            }
+        });
     }
 
     const progress = State.currentUserData.cumulative_progress || {};
