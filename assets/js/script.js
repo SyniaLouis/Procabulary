@@ -3,9 +3,8 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/fi
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { SHEET_CSV_URL, ENCOURAGEMENTS, SOFT_COLORS } from "./dtb.js";
 import { getSmartFeedback } from "./smafed.js";
-import { updateProcabScore, saveFinalProgress } from "./procab.js";
+import { updateProcabScore, saveFinalProgress, getCustomLessons } from "./procab.js";
 import "./func.js";
-import { getCustomLessons } from "./procab.js";
 
 export const State = {
     currentUserData: { procab_scores: {}, cumulative_progress: {} },
@@ -109,7 +108,7 @@ export async function updateDashboard() {
         createBtn.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p>Tối đa 100 từ</p>`;
         grid.appendChild(createBtn);
 
-        const { getCustomLessons } = await import("./procab.js");
+        // Chị đã bỏ dòng "await import" dư thừa ở đây nhé
         const customs = await getCustomLessons();
         customs.forEach(c => { State.LESSONS_DATABASE[c.id] = c; });
     }
