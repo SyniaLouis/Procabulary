@@ -162,10 +162,17 @@ export function verify() {
 
     if (val === correct) {
         updateProcabScore(true, State.currentLessonId, target.originalIndex, State.currentUserData);
-        State.currentIdx++;
-        State.attemptsPerWord = 0;
-        if (State.currentIdx < State.sessionWords.length) renderFlashcard(); 
-        else finish();
+        if (flashcard) flashcard.classList.remove('flipped');
+        setTimeout(() => {
+            State.currentIdx++;
+            State.attemptsPerWord = 0; 
+            
+            if (State.currentIdx < State.sessionWords.length) {
+                renderFlashcard();
+            } else {
+                finish();
+            }
+        }, 300);
     } else {
         State.attemptsPerWord++;
         updateProcabScore(false, State.currentLessonId, target.originalIndex, State.currentUserData);
