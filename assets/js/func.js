@@ -1,6 +1,7 @@
 import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from "./script.js";
 
 window.toggleFlip = () => {
+    const fc = document.getElementById('fc');
     if (!fc) return;
     fc.classList.toggle('flipped');
     if (fc.classList.contains('flipped')) {
@@ -101,9 +102,12 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const fc = document.getElementById('fc');
         const viewLesson = document.getElementById('view-lesson');
+        const input = document.getElementById('fc-input');
         const isLessonActive = viewLesson && !viewLesson.classList.contains('hidden');
-        if (isLessonActive && fc && !fc.classList.contains('flipped')) {
+        if (!isLessonActive || !fc) return;
+        if (!fc.classList.contains('flipped')) {
             window.toggleFlip();
+        }
         }
     }
 });
