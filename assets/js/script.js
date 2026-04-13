@@ -256,3 +256,12 @@ export function backToDashboard() {
     document.getElementById('view-dashboard').classList.remove('hidden');
     updateDashboard();
 }
+window.openCreateModal = () => {
+    const modal = document.getElementById('modal-create-lesson');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeCreateModal = () => {
+    const modal = document.getElementById('modal-create-lesson');
+    if (modal) modal.style.display = 'none';
+};
