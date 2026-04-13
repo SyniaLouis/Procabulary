@@ -41,9 +41,14 @@ export async function deleteCustomLesson(lessonId) {
 }
 
 export async function getCustomLessons() {
-    const user = auth.currentUser;
+  const user = auth.currentUser;
     if (!user) return [];
-    const colRef = collection(db, "users", user.uid, "custom_lessons");
-    const snap = await getDocs(colRef);
-    return snap.docs.map(d => ({ id: d.id, ...d.data(), isCustom: true }));
+    try {
+        const colRef = collection(db, "users", user.uid, "custom_lessons");
+        const snap = await getDocs(colRef);
+        return snap.docs.map(d => ({ id: d.id, ...d.data(), isCustom: true }));
+    } catch (error) {
+        console.error("Lỗi lấy dữ liệu cá nhân:", error);
+        return [];
+    }
 }
