@@ -271,7 +271,16 @@ function renderCorrectFeedback(correct, input, targetEl) {
 export async function finish() {
     const count = State.sessionWords.filter(w => w.type === 'normal').length;
     await saveFinalProgress(State.currentLessonId, count, State.currentUserData, State.LESSONS_DATABASE);
-    document.getElementById('lesson-content').innerHTML = `<div style="text-align:center; padding: 40px;"><h2 style="font-size: 2.2rem;">🎉 Chúc mừng! Bạn đã hoàn thành !</h2><button onclick="window.backToDashboard()" class="back-btn">QUAY LẠI</button></div>`;
+    document.getElementById('lesson-content').innerHTML = `
+        <div class="finish-container">
+            <div class="finish-icon">🎉</div>
+            <h2>Hoàn thành xuất sắc!</h2>
+            <p>Em đã hoàn thành phiên học này rồi.</p>
+            <button onclick="window.backToDashboard()" class="back-btn-styled">
+                QUAY LẠI BẢNG ĐIỀU KHIỂN
+            </button>
+        </div>
+    `;
 }
 
 export function backToDashboard() {
