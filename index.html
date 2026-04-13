@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Procabulary Engine - Nền tảng Tiếng Anh Chuyên nghiệp</title>
+    <title>Procab Engine - Nền tảng Tiếng Anh Chuyên nghiệp</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +86,7 @@
             padding: 0 20px;
         }
         
+        /* Class hỗ trợ ẩn phần tử nhanh */
         .hidden {
             display: none !important;
         }
@@ -101,20 +102,41 @@
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
         }
-
-        /* Modal & Form Styles */
-        .custom-form label { display: block; color: #cbd5e1; margin-bottom: 8px; font-weight: 500; }
-        .custom-form input, .custom-form textarea { 
-            width: 100%; background: #0f172a; border: 1px solid #334155; 
-            color: white; padding: 12px; border-radius: 8px; box-sizing: border-box;
-            font-family: inherit; margin-bottom: 15px;
+        .cat-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 35px 25px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .btn-primary { 
-            background: var(--brand-blue); color: white; border: none; padding: 14px; 
-            border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%;
-            transition: opacity 0.2s;
+        .cat-card:hover {
+            border-color: var(--brand-blue);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.1);
+            transform: translateY(-5px);
         }
-        .btn-primary:hover { opacity: 0.9; }
+        .cat-icon svg {
+            width: 50px;
+            height: 50px;
+            fill: var(--brand-blue);
+            margin-bottom: 20px;
+        }
+        .cat-title { 
+            font-size: 1.25rem; 
+            font-weight: 700; 
+            color: var(--brand-navy); 
+            margin-bottom: 10px; 
+        }
+        .cat-desc { 
+            font-size: 0.95rem; 
+            color: #64748b; 
+            text-align: center; 
+            line-height: 1.5; 
+        }
 
         footer {
             text-align: center;
@@ -130,7 +152,6 @@
     <div class="hero-section">
         <h1>Procabulary Engine</h1>
         <p>Hệ thống Flashcard thông minh ứng dụng thuật toán phân cấp gợi ý (Progressive Hinting), thiết kế chuyên biệt để chinh phục Tiếng Anh học thuật.</p>
-        
         <div id="auth-container" style="text-align: center; margin-top: 25px;">
             <button id="login-btn" style="background: var(--brand-blue); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Inter', sans-serif;">
                 Đăng nhập và học ngay !
@@ -144,26 +165,7 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <div class="features-section">
-        <div class="feature-card">
-            <h3>Thuật toán Procab</h3>
-            <p>Tự động lưu trữ lịch sử lỗi và ưu tiên ôn tập những từ vựng có tỷ lệ sai cao.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Smart Feedback</h3>
-            <p>Phân tích chuỗi thông minh, tăng vận tốc học, giảm căng thẳng.</p>
-        </div>
-    </div>
-
-    <div id="courses-container" class="courses-section hidden">
-        <h2 class="section-title">Lựa chọn lộ trình của bạn</h2>
-        <div class="category-grid" id="dashboard-grid">
-            </div>
-    </div>
-
-    <div id="modal-selection" class="modal-overlay">
+        <div id="modal-selection" class="modal-overlay">
         <div class="modal-content">
             <h3>Chọn số lượng từ ôn tập 🎯</h3>
             <ul>
@@ -176,77 +178,137 @@
         </div>
     </div>
 
-    <div id="modal-create-lesson" class="modal-overlay">
-        <div class="modal-content" style="max-width: 500px;">
-            <h3>Tạo bộ từ riêng của bạn</h3>
-            <div class="custom-form">
-                <div>
-                    <label>Tên bộ từ:</label>
-                    <input type="text" id="custom-title" placeholder="Ví dụ: My Vocabulary...">
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+            import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
+                authDomain: "procabulary-engine.firebaseapp.com",
+                projectId: "procabulary-engine",
+                storageBucket: "procabulary-engine.firebasestorage.app",
+                messagingSenderId: "271617165131",
+                appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
+                measurementId: "G-NCL1PT38MN"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const provider = new GoogleAuthProvider();
+
+            document.getElementById('login-btn').addEventListener('click', () => {
+                signInWithPopup(auth, provider).catch(error => console.error("Lỗi đăng nhập:", error));
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                signOut(auth);
+            });
+
+           onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('login-btn');
+    const userInfo = document.getElementById('user-info');
+    const userName = document.getElementById('user-name');
+    const userAvatar = document.getElementById('user-avatar'); // Lấy element ảnh
+    const coursesSection = document.getElementById('courses-container');
+
+    if (user) {
+        loginBtn.style.display = 'none';
+        userInfo.classList.remove('hidden');
+        
+        // Gán dữ liệu từ Firebase vào UI
+        userName.innerText = user.displayName; 
+        userAvatar.src = user.photoURL || 'https://via.placeholder.com/35'; // Hiện ảnh từ Google hoặc ảnh mặc định
+        
+        if (coursesSection) coursesSection.classList.remove('hidden');
+    } else {
+        loginBtn.style.display = 'inline-block';
+        userInfo.classList.add('hidden');
+        if (coursesSection) coursesSection.classList.add('hidden');
+    }
+});
+        </script>
+    </div>
+
+    <div class="features-section">
+        <div class="feature-card">
+            <h3>Thuật toán Procab</h3>
+            <p>Tự động lưu trữ lịch sử lỗi và ưu tiên hiển thị những từ vựng bạn hay gõ sai.</p>
+        </div>
+        <div class="feature-card">
+            <h3>Smart Feedback</h3>
+            <p>Phân tích chuỗi thông minh, chỉ ra chính xác vị trí chữ cái bị nhầm hoặc thiếu.</p>
+        </div>
+    </div>
+
+    <div id="courses-container" class="courses-section hidden">
+        <h2 class="section-title">Lựa chọn lộ trình của bạn</h2>
+        <div class="category-grid">
+            <a href="PERSONAL/index.html" class="cat-card create-trigger-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 5V19M5 12H19" stroke="var(--brand-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <div>
-                    <label>Dữ liệu (Word, IPA, Meaning):</label>
-                    <textarea id="custom-data" placeholder="Apple, /ˈæp.əl/, Quả táo, ..."></textarea>
+                <div class="cat-title">Bộ từ cá nhân</div>
+                <div class="cat-desc">Tự tạo và quản lý danh sách từ vựng của riêng bạn.</div>
+            </a>
+            <a href="IELTS/index.html" class="cat-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V19.25A1.75 1.75 0 0 1 18.25 21H6.5A2.5 2.5 0 0 1 4 19.5Z" opacity="0.2"/>
+                        <path d="M6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5v-14A2.5 2.5 0 0 1 6.5 3ZM16 7H9v2h7V7Z"/>
+                    </svg>
                 </div>
-                <button class="btn-primary" onclick="window.saveNewLesson()">TẠO NGAY</button>
-                <button class="cancel-btn" onclick="window.closeCreateModal()">HỦY BỎ</button>
-            </div>
+                <div class="cat-title">Từ vựng IELTS</div>
+                <div class="cat-desc">Học từ vựng nền tảng và nâng cao với các chủ đề luyện thi chuyên sâu.</div>
+            </a>
+            <a href="BBS/index.html" class="cat-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V19.25A1.75 1.75 0 0 1 18.25 21H6.5A2.5 2.5 0 0 1 4 19.5Z" opacity="0.2"/>
+                        <path d="M6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5v-14A2.5 2.5 0 0 1 6.5 3ZM16 7H9v2h7V7Z"/>
+                    </svg>
+                </div>
+                <div class="cat-title">Từ vựng Kinh Doanh</div>
+                <div class="cat-desc">Học từ vựng chuyên ngành Kinh Doanh.</div>
+            </a>
+            <a href="IT/index.html" class="cat-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V19.25A1.75 1.75 0 0 1 18.25 21H6.5A2.5 2.5 0 0 1 4 19.5Z" opacity="0.2"/>
+                        <path d="M6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5v-14A2.5 2.5 0 0 1 6.5 3ZM16 7H9v2h7V7Z"/>
+                    </svg>
+                </div>
+                <div class="cat-title">Từ vựng Công Nghệ Thông Tin</div>
+                <div class="cat-desc">Học từ vựng chuyên ngành Công Nghệ Thông Tin.</div>
+            </a>
+            <a href="NUR/index.html" class="cat-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V19.25A1.75 1.75 0 0 1 18.25 21H6.5A2.5 2.5 0 0 1 4 19.5Z" opacity="0.2"/>
+                        <path d="M6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5v-14A2.5 2.5 0 0 1 6.5 3ZM16 7H9v2h7V7Z"/>
+                    </svg>
+                </div>
+                <div class="cat-title">Từ vựng Điều Dưỡng</div>
+                <div class="cat-desc">Học từ vựng chuyên ngành Điều Dưỡng.</div>
+            </a>
+            <a href="MECH/index.html" class="cat-card">
+                <div class="cat-icon">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V19.25A1.75 1.75 0 0 1 18.25 21H6.5A2.5 2.5 0 0 1 4 19.5Z" opacity="0.2"/>
+                        <path d="M6.5 3H20v14H6.5A2.5 2.5 0 0 0 4 19.5v-14A2.5 2.5 0 0 1 6.5 3ZM16 7H9v2h7V7Z"/>
+                    </svg>
+                </div>
+                <div class="cat-title">Từ vựng Kĩ Thuật</div>
+                <div class="cat-desc">Học từ vựng chuyên ngành Kĩ Thuật.</div>
+            </a>
+            
         </div>
     </div>
 
     <footer>
         &copy; 2026 Procabulary Engine by Truong Minh Tien. All rights reserved.
     </footer>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCaw0glUY4-Cv9e9JbL09Cfgcmc6vMxaak",
-            authDomain: "procabulary-engine.firebaseapp.com",
-            projectId: "procabulary-engine",
-            storageBucket: "procabulary-engine.firebasestorage.app",
-            messagingSenderId: "271617165131",
-            appId: "1:271617165131:web:c3b3f8f88b2b39c4410ace",
-            measurementId: "G-NCL1PT38MN"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-
-        document.getElementById('login-btn').addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(error => console.error("Lỗi đăng nhập:", error));
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth);
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            const loginBtn = document.getElementById('login-btn');
-            const userInfo = document.getElementById('user-info');
-            const userName = document.getElementById('user-name');
-            const userAvatar = document.getElementById('user-avatar');
-            const coursesSection = document.getElementById('courses-container');
-
-            if (user) {
-                loginBtn.style.display = 'none';
-                userInfo.classList.remove('hidden');
-                userName.innerText = user.displayName; 
-                userAvatar.src = user.photoURL || 'https://via.placeholder.com/35';
-                if (coursesSection) coursesSection.classList.remove('hidden');
-            } else {
-                loginBtn.style.display = 'inline-block';
-                userInfo.classList.add('hidden');
-                if (coursesSection) coursesSection.classList.add('hidden');
-            }
-        });
-    </script>
-
-    <script type="module" src="assets/js/script.js"></script>
-    <script type="module" src="assets/js/func.js"></script>
 
 </body>
 </html>
