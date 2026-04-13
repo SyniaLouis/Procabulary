@@ -4,6 +4,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-
 import { SHEET_CSV_URL, ENCOURAGEMENTS, SOFT_COLORS } from "./dtb.js";
 import { getSmartFeedback } from "./smafed.js";
 import { updateProcabScore, saveFinalProgress } from "./procab.js";
+import { getCustomLessons } from "./procab.js";
 
 export const State = {
     currentUserData: { procab_scores: {}, cumulative_progress: {} },
@@ -23,6 +24,8 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         const docSnap = await getDoc(doc(db, "users", user.uid));
         if (docSnap.exists()) State.currentUserData = docSnap.data();
+        const customs = await getCustomLessons();
+        customs.forEach(c => { State.LESSONS_DATABASE[c.id] = c; });
         updateUIForUser(user);
         if (Object.keys(State.LESSONS_DATABASE).length > 0) updateDashboard();
     } else if (!['/index.html', '/'].includes(window.location.pathname)) {
@@ -94,6 +97,11 @@ export function updateDashboard() {
     const grid = document.getElementById('dashboard-grid');
     if (!grid) return;
     grid.innerHTML = '';
+    const createCard = document.createElement('div');
+    createCard.className = 'lesson-card custom-card';
+    createCard.onclick = window.openCreateModal;
+    createCard.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p style="font-size:0.8rem">Tối đa 50 từ</p>`;
+    grid.appendChild(createCard);
     const progress = State.currentUserData.cumulative_progress || {};
     Object.keys(State.LESSONS_DATABASE).forEach(id => {
         const d = State.LESSONS_DATABASE[id];
@@ -103,7 +111,13 @@ export function updateDashboard() {
         const card = document.createElement('div');
         card.className = `lesson-card ${p >= 100 ? 'done' : ''}`;
         card.onclick = () => window.showSelectionModal(id);
-        card.innerHTML = `<h3>${d.title}</h3><div class="progress-text">${count}/${target}</div><div class="progress-container"><div class="progress-fill" style="width:${p}%"></div></div>`;
+        const deleteBtn = d.isCustom ? `<button class="delete-lesson-btn" onclick="window.handleDeleteLesson(event, '${id}')">Xóa bộ từ</button>` : '';
+        card.innerHTML = `
+            <h3>${d.title}</h3>
+            <div class="progress-text">${count}/${target}</div>
+            <div class="progress-container"><div class="progress-fill" style="width:${p}%"></div></div>
+            ${deleteBtn}
+        `;
         grid.appendChild(card);
     });
 }
