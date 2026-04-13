@@ -1,5 +1,6 @@
 import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from "./script.js";
 import { saveCustomLesson, deleteCustomLesson } from "./procab.js";
+let targetIdToDelete = null;
 
 window.toggleFlip = () => {
     const fc = document.getElementById('fc'); 
@@ -210,12 +211,28 @@ window.saveNewLesson = async () => {
 
 window.handleDeleteLesson = async (e, id) => {
     e.stopPropagation();
-    if (confirm("Bạn có chắc chắn muốn xóa bộ từ này không?")) {
-        try {
-            await deleteCustomLesson(id);
-            location.reload();
-        } catch (error) {
-            console.error("Lỗi khi xóa bộ từ:", error);
-        }
-    }
+   targetIdToDelete = id;
+    const modal = document.getElementById('delete-modal');
+    if (modal) modal.style.display = 'flex';
 };
+
+window.closeDeleteModal = () => {
+    const modal = document.getElementById('delete-modal');
+    if (modal) modal.style.display = 'none';
+    targetIdToDelete = null;
+};
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+            if (targetIdToDelete) {
+                try {
+                    await deleteCustomLesson(targetIdToDelete);
+                    location.reload();
+                } catch (error) {
+                    console.error("Error deleting lesson:", error);
+                }
+            }
+        };
+    }
+});
