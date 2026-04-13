@@ -185,10 +185,10 @@ body.dark-mode ::-webkit-scrollbar-thumb { background: var(--border); border-rad
 }
 
 .diff-correct { color: #ffffff; } 
-.diff-wrong { color: #ff9999; text-decoration: line-through; } 
-.diff-missing { color: #fcd34d; border-bottom: 2px dashed #fcd34d; }
+.diff-wrong {color: #ff4d4d; font-weight: bold;} 
+.diff-missing {color: #ffcc00; border-bottom: 2px solid #ffcc00;}
 .diff-extra { color: #cbd5e1; opacity: 0.6; }
-.diff-transposed { color: #e9d5ff; border-bottom: 2px solid #e9d5ff; background: rgba(255,255,255,0.1); border-radius: 4px; }
+.diff-transposed { color: #c084fc; border-bottom: 2px solid #c084fc; }
 
 input { 
     padding: 14px; 
