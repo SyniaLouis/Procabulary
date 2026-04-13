@@ -4,6 +4,7 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-
 import { SHEET_CSV_URL, ENCOURAGEMENTS, SOFT_COLORS } from "./dtb.js";
 import { getSmartFeedback } from "./smafed.js";
 import { updateProcabScore, saveFinalProgress } from "./procab.js";
+import "./func.js";
 import { getCustomLessons } from "./procab.js";
 
 export const State = {
