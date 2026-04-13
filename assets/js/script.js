@@ -143,7 +143,7 @@ export function verify() {
         if (State.attemptsPerWord >= 2) {
             const accuracyInfo = document.createElement('div');
             accuracyInfo.style.cssText = "color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;";
-            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}% - Cố lên Mây ơi!`;
+            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}% rồi, cố lên em !`;
             errorDiv.appendChild(accuracyInfo);
         }
 
