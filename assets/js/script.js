@@ -226,28 +226,25 @@ function renderInputFeedback(diffMap, targetEl, accuracy) {
 function renderCorrectFeedback(correct, input, targetEl) {
     targetEl.innerHTML = '';
     const feedback = getSmartFeedback(correct, input);
-
-    const correctChars = correct.split('');
     const wrapper = document.createElement('div');
 
-    correctChars.forEach((char, idx) => {
-        const span = document.createElement('span');
-        span.innerText = char;
-
-        const status = feedback.diffMap.find(d => d.char === char && d.type !== 'extra');
-        
-        if (status && status.type === 'correct') {
-            span.className = 'diff-char diff-correct';
-        } else {
-
-            span.className = 'diff-char diff-wrong'; 
-            span.style.textDecoration = "none"; 
+    feedback.diffMap.forEach(item => {
+        if (item.expected !== '') {
+            const span = document.createElement('span');
+            span.innerText = item.expected;
+            
+            if (item.type === 'correct') {
+                span.className = 'diff-char diff-correct';
+            } else {
+                span.className = `diff-char diff-${item.type}`;
+                span.style.textDecoration = "none"; 
+            }
+            wrapper.appendChild(span);
         }
-        wrapper.appendChild(span);
     });
 
     const label = document.createElement('div');
-    label.style.cssText = "color: #fff; font-size: 0.75rem; margin-bottom: 5px; opacity: 0.8;";
+    label.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-bottom: 8px;";
     label.innerText = "Đáp án đúng là:";
     targetEl.appendChild(label);
     targetEl.appendChild(wrapper);
