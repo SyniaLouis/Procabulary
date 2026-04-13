@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Procab Engine - Nền tảng Tiếng Anh Chuyên nghiệp</title>
+    <title>Procabulary Engine - Nền tảng Tiếng Anh Chuyên nghiệp</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,7 +86,6 @@
             padding: 0 20px;
         }
         
-        /* Class hỗ trợ ẩn phần tử nhanh */
         .hidden {
             display: none !important;
         }
@@ -215,7 +214,6 @@
         loginBtn.style.display = 'none';
         userInfo.classList.remove('hidden');
         
-        // Gán dữ liệu từ Firebase vào UI
         userName.innerText = user.displayName; 
         userAvatar.src = user.photoURL || 'https://via.placeholder.com/35'; // Hiện ảnh từ Google hoặc ảnh mặc định
         
@@ -232,11 +230,11 @@
     <div class="features-section">
         <div class="feature-card">
             <h3>Thuật toán Procab</h3>
-            <p>Tự động lưu trữ lịch sử lỗi và ưu tiên hiển thị những từ vựng bạn hay gõ sai.</p>
+            <p>Tự động lưu trữ, phân tích lỗi sai và ưu tiên những từ vựng bạn thường nhầm lẫn.</p>
         </div>
         <div class="feature-card">
             <h3>Smart Feedback</h3>
-            <p>Phân tích chuỗi thông minh, chỉ ra chính xác vị trí chữ cái bị nhầm hoặc thiếu.</p>
+            <p>Phân tích chuỗi, chỉ ra chính xác vị trí bạn sai, thuật toán phân cấp giúp việc học dễ dàng hơn.</p>
         </div>
     </div>
 
