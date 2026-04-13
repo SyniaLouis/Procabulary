@@ -1,16 +1,16 @@
 import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from "./script.js";
 
 window.toggleFlip = () => {
-    const fc = document.getElementById('fc');
+    const fc = document.getElementById('fc'); 
     if (!fc) return;
 
     fc.classList.toggle('flipped');
-
+    
     if (fc.classList.contains('flipped')) {
         setTimeout(() => {
             const input = document.getElementById('fc-input');
             if (input) {
-                input.value = ""; 
+                input.value = "";
                 input.focus();
             }
         }, 300); 
@@ -18,9 +18,7 @@ window.toggleFlip = () => {
 };
 
 window.handleEnter = (e) => {
-    if (e.key === 'Enter') {
-        verify();
-    }
+    if (e.key === 'Enter') verify();
 };
 
 window.backToDashboard = backToDashboard;
@@ -56,6 +54,7 @@ window.startLesson = (count) => {
 };
 
 window.speakWord = (text) => {
+    window.speechSynthesis.cancel();
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = State.audioConfig.lang;
     msg.rate = State.audioConfig.rate;
@@ -64,6 +63,7 @@ window.speakWord = (text) => {
 
 window.handleHomeClick = () => {
     const isLearning = !document.getElementById('view-lesson').classList.contains('hidden');
+    
     if (isLearning) {
         const confirmModal = document.getElementById('confirm-modal');
         if (confirmModal) confirmModal.style.display = 'flex';
@@ -76,7 +76,39 @@ window.toggleDarkMode = () => {
     const isDark = document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', isDark);
     const themeBtn = document.getElementById('theme-btn');
-    if (themeBtn) themeBtn.innerText = isDark ? '☀️' : '🌙';
+    if (themeBtn) {
+        themeBtn.innerText = isDark ? '☀️' : '🌙';
+    }
+};
+
+window.toggleSpeed = () => {
+    const speeds = [0.8, 1.0, 1.2, 1.5];
+    let currentIdx = speeds.indexOf(State.audioConfig.rate);
+    let nextIdx = (currentIdx + 1) % speeds.length;
+    let nextSpeed = speeds[nextIdx];
+
+    State.audioConfig.rate = nextSpeed;
+    localStorage.setItem('audio-rate', nextSpeed);
+
+    const btn = document.getElementById('speed-btn');
+    if (btn) btn.innerText = nextSpeed + 'x';
+};
+
+window.toggleVoice = () => {
+    const voices = [
+        { lang: 'en-US', label: 'US' },
+        { lang: 'en-GB', label: 'UK' },
+        { lang: 'en-AU', label: 'AU' }
+    ];
+    let currentIdx = voices.findIndex(v => v.lang === State.audioConfig.lang);
+    let nextIdx = (currentIdx + 1) % voices.length;
+    let nextVoice = voices[nextIdx];
+
+    State.audioConfig.lang = nextVoice.lang;
+    localStorage.setItem('audio-lang', nextVoice.lang);
+
+    const btn = document.getElementById('voice-btn');
+    if (btn) btn.innerText = nextVoice.label;
 };
 
 window.closeConfirmModal = () => {
@@ -99,7 +131,6 @@ document.addEventListener('keydown', (e) => {
         const fc = document.getElementById('fc');
         const viewLesson = document.getElementById('view-lesson');
         const isLessonActive = viewLesson && !viewLesson.classList.contains('hidden');
-        
         if (isLessonActive && fc && !fc.classList.contains('flipped')) {
             window.toggleFlip();
         }
