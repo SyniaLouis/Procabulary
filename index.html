@@ -165,6 +165,18 @@
                 </button>
             </div>
         </div>
+        <div id="modal-selection" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Chọn số lượng từ ôn tập 🎯</h3>
+            <ul>
+                <li class="word-count-option" onclick="startLesson(5)">Học nhanh: 5 từ</li>
+                <li class="word-count-option" onclick="startLesson(10)">Tiêu chuẩn: 10 từ</li>
+                <li class="word-count-option" onclick="startLesson(20)">Chuyên sâu: 20 từ</li>
+                <li class="word-count-option" onclick="startLesson(50)">Thử thách: 50 từ</li>
+            </ul>
+            <button class="cancel-btn" onclick="closeSelectionModal()">HỦY BỎ</button>
+        </div>
+    </div>
 
         <script type="module">
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
