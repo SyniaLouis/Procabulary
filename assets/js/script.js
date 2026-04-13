@@ -94,25 +94,45 @@ function parseCSV(t) {
     return r;
 }
 
-export function updateDashboard() {
+export async function updateDashboard() {
     const grid = document.getElementById('dashboard-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    const createCard = document.createElement('div');
-    createCard.className = 'lesson-card custom-card';
-    createCard.onclick = window.openCreateModal;
-    createCard.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p style="font-size:0.8rem">Tối đa 50 từ</p>`;
-    grid.appendChild(createCard);
+
+    const isPersonalPage = window.CATEGORY_FILTER === 'PERSONAL';
+
+    if (isPersonalPage) {
+        const createBtn = document.createElement('div');
+        createBtn.className = 'lesson-card';
+        createBtn.style.border = '2px dashed var(--primary)';
+        createBtn.onclick = window.openCreateModal;
+        createBtn.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p>Tối đa 100 từ</p>`;
+        grid.appendChild(createBtn);
+
+        const { getCustomLessons } = await import("./procab.js");
+        const customs = await getCustomLessons();
+        customs.forEach(c => { State.LESSONS_DATABASE[c.id] = c; });
+    }
+
     const progress = State.currentUserData.cumulative_progress || {};
+    
     Object.keys(State.LESSONS_DATABASE).forEach(id => {
         const d = State.LESSONS_DATABASE[id];
+        
+        if (isPersonalPage && !d.isCustom) return;
+        if (!isPersonalPage && d.isCustom) return;
+
         const count = progress[id] || 0;
         const target = d.num * 5;
         const p = Math.min(Math.floor((count / target) * 100), 100);
+
         const card = document.createElement('div');
         card.className = `lesson-card ${p >= 100 ? 'done' : ''}`;
         card.onclick = () => window.showSelectionModal(id);
-        const deleteBtn = d.isCustom ? `<button class="delete-lesson-btn" onclick="window.handleDeleteLesson(event, '${id}')">Xóa bộ từ</button>` : '';
+        
+        const deleteBtn = (isPersonalPage && d.isCustom) ? 
+            `<button onclick="window.handleDeleteLesson(event, '${id}')" style="background:none; border:none; color:var(--error); cursor:pointer; text-decoration:underline; margin-top:10px; font-size:0.8rem;">Xóa bộ từ</button>` : '';
+
         card.innerHTML = `
             <h3>${d.title}</h3>
             <div class="progress-text">${count}/${target}</div>
