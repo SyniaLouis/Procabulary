@@ -190,7 +190,7 @@ input {
     height: 55px; 
     border-radius: 12px; 
     border: 2px solid rgba(255, 255, 255, 0.15); 
-    background: #0f172a;
+    background: #1e293b;
     color: white; 
     margin-top: 25px; 
     font-size: 1.1rem; 
@@ -199,7 +199,7 @@ input {
     font-family: 'Inter', sans-serif;
     transition: all 0.3s;
 }
-input:focus { border-color: rgba(255, 255, 255, 0.5); background: #020617; }
+input:focus { border-color: rgba(255, 255, 255, 0.5); background: #1e293b; }
 input::placeholder { color: rgba(255,255,255,0.4); font-weight: 400; }
 
 /* MODAL - CHỌN SỐ LƯỢNG TỪ */
