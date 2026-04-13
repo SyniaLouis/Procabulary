@@ -163,6 +163,7 @@ export function verify() {
     if (val === correct) {
         updateProcabScore(true, State.currentLessonId, target.originalIndex, State.currentUserData);
         if (flashcard) flashcard.classList.remove('flipped');
+        if (input) input.blur();
         setTimeout(() => {
             State.currentIdx++;
             State.attemptsPerWord = 0; 
