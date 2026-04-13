@@ -1,8 +1,17 @@
 import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from "./script.js";
 
 window.toggleFlip = () => {
-    const fc = document.getElementById('fc');
-    if (fc) fc.classList.toggle('flipped');
+    if (!fc) return;
+    fc.classList.toggle('flipped');
+    if (fc.classList.contains('flipped')) {
+        setTimeout(() => {
+            const input = document.getElementById('fc-input');
+            if (input) {
+                input.focus();
+                input.value = "";
+            }
+        }, 300);
+    }
 };
 
 window.handleEnter = (e) => {
@@ -86,5 +95,15 @@ document.addEventListener('DOMContentLoaded', () => {
             window.backToDashboard(); 
             window.closeConfirmModal();
         };
+    }
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const fc = document.getElementById('fc');
+        const viewLesson = document.getElementById('view-lesson');
+        const isLessonActive = viewLesson && !viewLesson.classList.contains('hidden');
+        if (isLessonActive && fc && !fc.classList.contains('flipped')) {
+            window.toggleFlip();
+        }
     }
 });
