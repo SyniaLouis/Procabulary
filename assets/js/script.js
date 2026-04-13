@@ -15,12 +15,14 @@ export const State = {
     audioConfig: { lang: localStorage.getItem('audio-lang') || 'en-US', rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0 }
 };
 
+// 1. Theo dõi trạng thái đăng nhập và tải dữ liệu người dùng
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const docSnap = await getDoc(doc(db, "users", user.uid));
         if (docSnap.exists()) State.currentUserData = docSnap.data();
         updateUIForUser(user);
-        updateDashboard();
+        // Đảm bảo có dữ liệu database mới cập nhật dashboard
+        if (Object.keys(State.LESSONS_DATABASE).length > 0) updateDashboard();
     } else if (!['/index.html', '/'].includes(window.location.pathname)) {
         window.location.href = '/index.html';
     }
@@ -33,6 +35,7 @@ function updateUIForUser(user) {
     if (userName) userName.innerText = user.displayName;
 }
 
+// 2. Khởi tạo ứng dụng
 window.addEventListener('load', async () => {
     if (localStorage.getItem('dark-mode') === 'true') document.body.classList.add('dark-mode');
     await fetchFlashcardsFromSheets();
@@ -52,12 +55,17 @@ async function fetchFlashcardsFromSheets() {
                 const parts = cols[2].split(',');
                 for (let i = 0; i < parts.length; i += 3) {
                     if (parts[i] && parts[i+1] && parts[i+2]) 
-                        words.push({ word: parts[i].trim(), ipa: parts[i+1].trim(), meaning: parts[i+2].trim(), originalIndex: i/3 });
+                        words.push({ 
+                            word: parts[i].trim(), 
+                            ipa: parts[i+1].trim(), 
+                            meaning: parts[i+2].trim(), 
+                            originalIndex: i/3 
+                        });
                 }
                 State.LESSONS_DATABASE[cols[0]] = { title: cols[1], words: words, num: parseInt(cols[3]) };
             }
         });
-    } catch (e) { console.error("Lỗi fetch dữ liệu:", e); }
+    } catch (e) { console.error("Lỗi tải dữ liệu Sheets:", e); }
 }
 
 function parseCSV(t) {
@@ -93,6 +101,7 @@ export function updateDashboard() {
     });
 }
 
+// 3. Logic Flashcard
 export function renderFlashcard() {
     State.attemptsPerWord = 0;
     const item = State.sessionWords[State.currentIdx];
@@ -102,24 +111,26 @@ export function renderFlashcard() {
         const q = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
         const c = SOFT_COLORS[Math.floor(Math.random() * SOFT_COLORS.length)];
         container.innerHTML = `
-    <div class="flashcard" id="fc" onclick="window.toggleFlip()">
-        <div class="flashcard-inner">
-            <div class="card-face">
-                <div class="word-text">${item.word}</div>
-                <div class="ipa-text">/${item.ipa}/</div>
-            </div>
-            <div class="card-face card-back" onclick="event.stopPropagation()">
+            <div class="flashcard special-card">
+                <div class="card-face" style="background:${c}; border-color:${c};">
+                    <div class="word-text" style="font-size: 1.5rem; line-height: 1.4; padding: 20px;">${q}</div>
                 </div>
-        </div>
-    </div>`;
-        setTimeout(() => { State.currentIdx++; if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish(); }, 2500);
+            </div>`;
+        setTimeout(() => { 
+            State.currentIdx++; 
+            if (State.currentIdx < State.sessionWords.length) renderFlashcard(); 
+            else finish(); 
+        }, 3000); // Tăng lên 3s để Mây kịp đọc lời động viên nhé
     } else {
         container.innerHTML = `
             <div class="flashcard" id="fc" onclick="window.toggleFlip()">
                 <div class="flashcard-inner">
-                    <div class="card-face"><div class="word-text">${item.word}</div><div class="ipa-text">/${item.ipa}/</div></div>
+                    <div class="card-face">
+                        <div class="word-text">${item.word}</div>
+                        <div class="ipa-text">/${item.ipa}/</div>
+                    </div>
                     <div class="card-face card-back" onclick="event.stopPropagation()">
-                        <p>${item.meaning}</p>
+                        <p style="font-weight: 500; margin-bottom: 10px;">${item.meaning}</p>
                         <input type="text" id="fc-input" placeholder="Gõ từ..." onkeydown="window.handleEnter(event)" autocomplete="off">
                         <div id="fc-error" style="margin-top:12px; min-height: 24px;"></div>
                     </div>
@@ -130,9 +141,12 @@ export function renderFlashcard() {
     }
 }
 
+// 4. Kiểm tra đáp án
 export function verify() {
     const input = document.getElementById('fc-input');
     const errorDiv = document.getElementById('fc-error');
+    if (!input || input.disabled) return; // Ngăn chặn gõ khi đang xử lý
+
     const target = State.sessionWords[State.currentIdx];
     const correct = target.word.toLowerCase();
     const val = input.value.trim().toLowerCase();
@@ -140,30 +154,32 @@ export function verify() {
     if (val === correct) {
         updateProcabScore(true, State.currentLessonId, target.originalIndex, State.currentUserData);
         State.currentIdx++;
-        if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish();
+        if (State.currentIdx < State.sessionWords.length) renderFlashcard(); 
+        else finish();
     } else {
-       State.attemptsPerWord++;
+        State.attemptsPerWord++;
         updateProcabScore(false, State.currentLessonId, target.originalIndex, State.currentUserData);
         
+        input.disabled = true; // Khóa input tạm thời
         input.style.borderColor = "var(--error)";
-        const feedback = getSmartFeedback(correct, val);
         
+        const feedback = getSmartFeedback(correct, val);
         renderVisualFeedback(feedback.diffMap, errorDiv);
 
         if (State.attemptsPerWord >= 2) {
             const accuracyInfo = document.createElement('div');
-            accuracyInfo.style.cssText = "color: rgba(255,255,255,0.8); font-size: 0.75rem; margin-top: 5px;";
+            accuracyInfo.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-top: 5px; font-weight: 500;";
             accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}%`;
             errorDiv.appendChild(accuracyInfo);
         }
 
         setTimeout(() => {
-            input.style.borderColor = "var(--border)";
+            input.disabled = false;
+            input.style.borderColor = "rgba(255,255,255,0.2)";
             document.getElementById('fc').classList.remove('flipped');
             input.value = "";
-            
             errorDiv.innerHTML = ''; 
-            
+            input.focus();
             window.speakWord(target.word);
         }, 2000);
     }
@@ -184,15 +200,17 @@ export async function finish() {
     const count = State.sessionWords.filter(w => w.type === 'normal').length;
     await saveFinalProgress(State.currentLessonId, count, State.currentUserData, State.LESSONS_DATABASE);
     document.getElementById('lesson-content').innerHTML = `
-        <div style="text-align:center; padding: 40px;">
-            <h2 style="font-size: 2rem;">🎉 Hoàn thành!</h2>
-            <p>Em đã hoàn thành xuất sắc bài học này.</p>
+        <div style="text-align:center; padding: 40px; color: var(--navy);">
+            <h2 style="font-size: 2.2rem; margin-bottom: 15px;">🎉 Tuyệt vời quá Mây ơi!</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 30px;">Em đã hoàn thành xuất sắc bài học này rồi.</p>
             <button onclick="window.backToDashboard()" class="back-btn">QUAY LẠI DASHBOARD</button>
         </div>`;
 }
 
 export function backToDashboard() {
-    document.getElementById('view-lesson').classList.add('hidden');
-    document.getElementById('view-dashboard').classList.remove('hidden');
+    const lessonView = document.getElementById('view-lesson');
+    const dashboardView = document.getElementById('view-dashboard');
+    if (lessonView) lessonView.classList.add('hidden');
+    if (dashboardView) dashboardView.classList.remove('hidden');
     updateDashboard();
 }
