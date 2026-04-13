@@ -132,7 +132,7 @@ export function verify() {
         State.currentIdx++;
         if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish();
     } else {
-        State.attemptsPerWord++;
+       State.attemptsPerWord++;
         updateProcabScore(false, State.currentLessonId, target.originalIndex, State.currentUserData);
         
         input.style.borderColor = "var(--error)";
@@ -142,8 +142,8 @@ export function verify() {
 
         if (State.attemptsPerWord >= 2) {
             const accuracyInfo = document.createElement('div');
-            accuracyInfo.style.cssText = "color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;";
-            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}% rồi, cố lên em !`;
+            accuracyInfo.style.cssText = "color: rgba(255,255,255,0.8); font-size: 0.75rem; margin-top: 5px;";
+            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}%`;
             errorDiv.appendChild(accuracyInfo);
         }
 
@@ -151,6 +151,9 @@ export function verify() {
             input.style.borderColor = "var(--border)";
             document.getElementById('fc').classList.remove('flipped');
             input.value = "";
+            
+            errorDiv.innerHTML = ''; 
+            
             window.speakWord(target.word);
         }, 2000);
     }
