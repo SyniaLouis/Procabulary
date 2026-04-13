@@ -6,24 +6,24 @@ export function getSmartFeedback(correctWord, lastInput) {
 
     while (i < correct.length || j < input.length) {
         if (i < correct.length && j < input.length && correct[i] === input[j]) {
-            diffMap.push({ char: correct[i], type: 'correct', label: 'Đúng' });
+            diffMap.push({ char: correct[i], expected: correct[i], type: 'correct', label: 'Đúng' });
             i++; j++;
         } 
-        else if (i + 1 < correct.length && j + 1 < input.length && 
-                 correct[i] === input[j+1] && correct[i+1] === input[j]) {
-            diffMap.push({ char: input[j], type: 'transposed', label: 'Lộn thứ tự' });
-            diffMap.push({ char: input[j+1], type: 'transposed', label: 'Lộn thứ tự' });
+        else if (i + 1 < correct.length && j + 1 < input.length && correct[i] === input[j+1] && correct[i+1] === input[j]) {
+            diffMap.push({ char: input[j], expected: correct[i], type: 'transposed', label: 'Lộn thứ tự' });
+            diffMap.push({ char: input[j+1], expected: correct[i+1], type: 'transposed', label: 'Lộn thứ tự' });
             i += 2; j += 2;
         }
         else {
             if (i < correct.length && j < input.length) {
-                diffMap.push({ char: input[j], type: 'wrong', label: 'Sai chữ' });
+                // SAI: Lưu ký tự em gõ (char) và ký tự lẽ ra phải đúng (expected)
+                diffMap.push({ char: input[j], expected: correct[i], type: 'wrong', label: 'Sai chữ' });
                 i++; j++;
             } else if (i < correct.length) {
-                diffMap.push({ char: correct[i], type: 'missing', label: 'Thiếu' });
+                diffMap.push({ char: '', expected: correct[i], type: 'missing', label: 'Thiếu' });
                 i++;
             } else {
-                diffMap.push({ char: input[j], type: 'extra', label: 'Thừa' });
+                diffMap.push({ char: input[j], expected: '', type: 'extra', label: 'Thừa' });
                 j++;
             }
         }
