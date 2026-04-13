@@ -31,8 +31,14 @@ onAuthStateChanged(auth, async (user) => {
 function updateUIForUser(user) {
     const avatar = document.getElementById('user-avatar');
     const userName = document.getElementById('user-name');
-    if (avatar) avatar.src = user.photoURL || 'https://via.placeholder.com/35';
-    if (userName) userName.innerText = user.displayName;
+   if (avatar) {
+        avatar.src = user.photoURL || 'https://via.placeholder.com/35';
+        avatar.style.display = 'block'; 
+    }
+    if (userName) {
+        userName.innerText = user.displayName;
+        userName.style.display = 'inline'; 
+    }
 }
 
 // 2. Khởi tạo ứng dụng
