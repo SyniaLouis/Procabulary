@@ -297,3 +297,6 @@ window.closeCreateModal = () => {
     const modal = document.getElementById('modal-create-lesson');
     if (modal) modal.style.display = 'none';
 };
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
