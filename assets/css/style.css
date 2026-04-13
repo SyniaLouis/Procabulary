@@ -316,3 +316,23 @@ input::placeholder { color: rgba(255,255,255,0.4); font-weight: 400; }
         font-size: 1.1rem;
     }
 }
+
+.create-btn-container { text-align: center; margin-bottom: 20px; }
+.btn-primary { 
+    background: var(--primary); color: white; border: none; padding: 12px 24px; 
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-family: 'Inter';
+}
+
+.custom-form { text-align: left; display: flex; flex-direction: column; gap: 15px; }
+.custom-form label { color: white; font-size: 0.9rem; font-weight: 600; }
+.custom-form input, .custom-form textarea { 
+    width: 100%; background: #0f172a; border: 1px solid #334155; 
+    color: white; padding: 12px; border-radius: 8px; box-sizing: border-box;
+}
+.custom-form textarea { height: 120px; resize: none; font-size: 0.9rem; }
+
+.lesson-card.custom-card { border-style: dashed; border-color: var(--primary); }
+.delete-lesson-btn { 
+    margin-top: 10px; color: #ef4444; background: none; border: none; 
+    cursor: pointer; font-size: 0.8rem; text-decoration: underline; 
+}
