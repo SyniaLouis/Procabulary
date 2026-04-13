@@ -137,8 +137,6 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
-window.openCreateModal = () => document.getElementById('modal-create-lesson').style.display = 'flex';
-window.closeCreateModal = () => document.getElementById('modal-create-lesson').style.display = 'none';
 
 window.saveNewLesson = async () => {
     const title = document.getElementById('custom-title').value.trim();
