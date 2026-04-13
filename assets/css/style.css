@@ -294,4 +294,25 @@ input::placeholder { color: rgba(255,255,255,0.4); font-weight: 400; }
     .flashcard { height: 320px; }
     .word-text { font-size: 2rem; }
     .modal-content { padding: 25px; }
+    .header-bar {
+        flex-direction: column; 
+        align-items: center; 
+        text-align: center;
+        gap: 12px;
+    }
+    .user-profile { 
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .header-btns {
+        justify-content: center; 
+        width: 100%;
+        margin-top: 5px;
+    }
+    .icon-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
 }
