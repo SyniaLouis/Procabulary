@@ -151,14 +151,20 @@ window.closeCreateModal = () => {
 window.saveNewLesson = async () => {
     const titleInput = document.getElementById('custom-title');
     const dataInput = document.getElementById('custom-data');
+    const errorDiv = document.getElementById('create-error'); /
     
-    if (!titleInput || !dataInput) return;
+    if (!titleInput || !dataInput || !errorDiv) return;
 
     const title = titleInput.value.trim();
     const rawData = dataInput.value.trim();
 
+    const showError = (message) => {
+        errorDiv.innerText = message;
+        setTimeout(() => { errorDiv.innerText = ""; }, 2000); 
+    };
+
     if (!title || !rawData) {
-        alert("Vui lòng điền đầy đủ thông tin!");
+        showError("Vui lòng điền đầy đủ thông tin!");
         return;
     }
 
@@ -176,21 +182,23 @@ window.saveNewLesson = async () => {
     }
 
     if (words.length === 0) {
-        alert("Định dạng dữ liệu không hợp lệ!");
+        showError("Định dạng dữ liệu không hợp lệ!");
         return;
     }
     if (words.length > 50) {
-        alert("Mỗi bộ từ chỉ được tối đa 50 từ!");
+        showError("Mỗi bộ từ chỉ được tối đa 50 từ!");
         return;
     }
 
     try {
         await saveCustomLesson({ title, words, num: words.length });
-        alert("Tạo bộ từ thành công!");
+        titleInput.value = "";
+        dataInput.value = "";
         window.closeCreateModal();
         location.reload(); 
     } catch (error) {
-        console.error("Lỗi khi lưu bộ từ:", error);
+        showError("Lỗi hệ thống, vui lòng thử lại sau!");
+        console.error(error);
     }
 };
 
