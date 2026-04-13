@@ -108,7 +108,6 @@ export async function updateDashboard() {
         createBtn.innerHTML = `<h3>+ Tạo bộ từ mới</h3><p>Tối đa 50 từ</p>`;
         grid.appendChild(createBtn);
 
-        // Chị đã bỏ dòng "await import" dư thừa ở đây nhé
         const customs = await getCustomLessons();
         customs.forEach(c => { 
             if (!State.LESSONS_DATABASE[c.id]) {
@@ -235,11 +234,13 @@ function renderInputFeedback(diffMap, targetEl, accuracy) {
     targetEl.innerHTML = '';
     const wrapper = document.createElement('div');
     diffMap.forEach(item => {
-        const span = document.createElement('span');
-        span.className = `diff-char diff-${item.type}`;
-        span.innerText = item.char;
-        span.setAttribute('data-label', item.label);
-        wrapper.appendChild(span);
+        if (item.char !== '' || item.type === 'missing') {
+            const span = document.createElement('span');
+            span.className = `diff-char diff-${item.type}`;
+            span.innerText = item.type === 'missing' ? item.expected : item.char;
+            span.setAttribute('data-label', item.label);
+            wrapper.appendChild(span);
+        }
     });
     targetEl.appendChild(wrapper);
     const acc = document.createElement('div');
@@ -252,15 +253,16 @@ function renderCorrectFeedback(correct, input, targetEl) {
     targetEl.innerHTML = '';
     const feedback = getSmartFeedback(correct, input);
     const wrapper = document.createElement('div');
+
     feedback.diffMap.forEach(item => {
         if (item.expected !== '') {
             const span = document.createElement('span');
             span.innerText = item.expected;
             span.className = `diff-char ${item.type === 'correct' ? 'diff-correct' : 'diff-wrong'}`;
-            if (item.type !== 'correct') span.style.textDecoration = "none";
             wrapper.appendChild(span);
         }
     });
+
     const label = document.createElement('div');
     label.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-bottom: 8px;";
     label.innerText = "Đáp án đúng là:";
