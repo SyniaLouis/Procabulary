@@ -1,5 +1,5 @@
 import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from "./script.js";
-import { updateDashboard } from "./script.js";
+import { saveCustomLesson, deleteCustomLesson } from "./procab.js";
 
 window.toggleFlip = () => {
     const fc = document.getElementById('fc'); 
@@ -138,33 +138,70 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-window.saveNewLesson = async () => {
-    const title = document.getElementById('custom-title').value.trim();
-    const rawData = document.getElementById('custom-data').value.trim();
+window.openCreateModal = () => {
+    const modal = document.getElementById('modal-create-lesson');
+    if (modal) modal.style.display = 'flex';
+};
 
-    if (!title || !rawData) return alert("Vui lòng điền đủ thông tin!");
+window.closeCreateModal = () => {
+    const modal = document.getElementById('modal-create-lesson');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveNewLesson = async () => {
+    const titleInput = document.getElementById('custom-title');
+    const dataInput = document.getElementById('custom-data');
+    
+    if (!titleInput || !dataInput) return;
+
+    const title = titleInput.value.trim();
+    const rawData = dataInput.value.trim();
+
+    if (!title || !rawData) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+    }
 
     const parts = rawData.split(',').map(p => p.trim());
     const words = [];
     for (let i = 0; i < parts.length; i += 3) {
         if (parts[i] && parts[i+1] && parts[i+2]) {
-            words.push({ word: parts[i], ipa: parts[i+1], meaning: parts[i+2], originalIndex: words.length });
+            words.push({ 
+                word: parts[i], 
+                ipa: parts[i+1], 
+                meaning: parts[i+2], 
+                originalIndex: words.length 
+            });
         }
     }
 
-    if (words.length === 0) return alert("Định dạng dữ liệu chưa đúng!");
-    if (words.length > 50) return alert("Vui lòng giảm số từ xuống dưới 50 nhé!");
+    if (words.length === 0) {
+        alert("Định dạng dữ liệu không hợp lệ!");
+        return;
+    }
+    if (words.length > 50) {
+        alert("Mỗi bộ từ chỉ được tối đa 50 từ!");
+        return;
+    }
 
-    await saveCustomLesson({ title, words, num: words.length });
-    alert("Tạo bộ từ thành công!");
-    window.closeCreateModal();
-    location.reload();
+    try {
+        await saveCustomLesson({ title, words, num: words.length });
+        alert("Tạo bộ từ thành công!");
+        window.closeCreateModal();
+        location.reload(); 
+    } catch (error) {
+        console.error("Lỗi khi lưu bộ từ:", error);
+    }
 };
 
 window.handleDeleteLesson = async (e, id) => {
     e.stopPropagation();
-    if (confirm("Bạn có chắc muốn xóa bộ từ này không?")) {
-        await deleteCustomLesson(id);
-        location.reload();
+    if (confirm("Bạn có chắc chắn muốn xóa bộ từ này không?")) {
+        try {
+            await deleteCustomLesson(id);
+            location.reload();
+        } catch (error) {
+            console.error("Lỗi khi xóa bộ từ:", error);
+        }
     }
 };
