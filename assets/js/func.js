@@ -139,13 +139,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 window.openCreateModal = () => {
-    const modal = document.getElementById('modal-create-lesson');
-    if (modal) modal.style.display = 'flex';
+    const m = document.getElementById('modal-create-lesson');
+    if(m) m.style.display = 'flex';
 };
 
 window.closeCreateModal = () => {
-    const modal = document.getElementById('modal-create-lesson');
-    if (modal) modal.style.display = 'none';
+    const m = document.getElementById('modal-create-lesson');
+    if(m) m.style.display = 'none';
 };
 
 window.saveNewLesson = async () => {
