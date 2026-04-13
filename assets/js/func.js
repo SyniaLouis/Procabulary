@@ -20,7 +20,12 @@ window.toggleFlip = () => {
 };
 
 window.handleEnter = (e) => {
-    if (e.key === 'Enter') verify();
+    if (e.key === 'Enter') {
+        const fc = document.getElementById('fc');
+        if (fc && fc.classList.contains('flipped')) {
+            verify();
+        }
+    }
 };
 
 window.backToDashboard = backToDashboard;
@@ -234,5 +239,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         };
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const fc = document.getElementById('fc');
+        const viewLesson = document.getElementById('view-lesson');
+        const isLessonActive = viewLesson && !viewLesson.classList.contains('hidden');
+
+        if (isLessonActive && fc && !fc.classList.contains('flipped')) {
+            window.toggleFlip();
+            e.preventDefault(); 
+            e.stopPropagation();
+        }
     }
 });
