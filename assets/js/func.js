@@ -156,7 +156,7 @@ window.saveNewLesson = async () => {
     if (!titleInput || !dataInput || !errorDiv) return;
 
     const title = titleInput.value.trim();
-    const rawData = dataInput.value.trim();
+    const rawData = dataInput.value.replace(/[\n\r]+/g, ',').trim();
 
     const showError = (message) => {
         errorDiv.innerText = message;
@@ -168,7 +168,7 @@ window.saveNewLesson = async () => {
         return;
     }
 
-    const parts = rawData.split(',').map(p => p.trim());
+    const parts = rawData.split(',').map(p => p.trim()).filter(p => p !== "");
     const words = [];
     for (let i = 0; i < parts.length; i += 3) {
         if (parts[i] && parts[i+1] && parts[i+2]) {
@@ -182,7 +182,7 @@ window.saveNewLesson = async () => {
     }
 
     if (words.length === 0) {
-        showError("Định dạng dữ liệu không hợp lệ!");
+        showError("Định dạng dữ liệu không hợp lệ (Cần: Từ, IPA, Nghĩa)!");
         return;
     }
     if (words.length > 50) {
@@ -191,7 +191,7 @@ window.saveNewLesson = async () => {
     }
 
     try {
-        await saveCustomLesson({ title, words, num: words.length });
+        await saveCustomLesson({ title, words, num: words.length, isCustom: true});
         titleInput.value = "";
         dataInput.value = "";
         window.closeCreateModal();
