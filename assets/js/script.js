@@ -233,15 +233,19 @@ export function verify() {
 function renderInputFeedback(diffMap, targetEl, accuracy) {
     targetEl.innerHTML = '';
     const wrapper = document.createElement('div');
+
     diffMap.forEach(item => {
+        const span = document.createElement('span');
+        span.className = `diff-char diff-${item.type}`;
+        
+        span.innerText = (item.type === 'missing') ? item.expected : item.char;
+        
         if (item.char !== '' || item.type === 'missing') {
-            const span = document.createElement('span');
-            span.className = `diff-char diff-${item.type}`;
-            span.innerText = item.type === 'missing' ? item.expected : item.char;
             span.setAttribute('data-label', item.label);
             wrapper.appendChild(span);
         }
     });
+    
     targetEl.appendChild(wrapper);
     const acc = document.createElement('div');
     acc.style.cssText = "color: #fcd34d; font-size: 0.8rem; margin-top: 8px; font-weight: bold;";
@@ -253,16 +257,17 @@ function renderCorrectFeedback(correct, input, targetEl) {
     targetEl.innerHTML = '';
     const feedback = getSmartFeedback(correct, input);
     const wrapper = document.createElement('div');
-
+    
     feedback.diffMap.forEach(item => {
         if (item.expected !== '') {
             const span = document.createElement('span');
             span.innerText = item.expected;
             span.className = `diff-char ${item.type === 'correct' ? 'diff-correct' : 'diff-wrong'}`;
+            if (item.type !== 'correct') span.style.textDecoration = "none";
             wrapper.appendChild(span);
         }
     });
-
+    
     const label = document.createElement('div');
     label.style.cssText = "color: rgba(255,255,255,0.7); font-size: 0.75rem; margin-bottom: 8px;";
     label.innerText = "Đáp án đúng là:";
