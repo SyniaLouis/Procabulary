@@ -58,6 +58,22 @@ window.handleHomeClick = () => {
         window.location.href = '../index.html';
     }
 };
+window.toggleDarkMode = () => {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', isDark);
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) {
+        themeBtn.innerText = isDark ? '☀️' : '🌙';
+    }
+};
+
+window.toggleSpeed = () => {
+    console.log("Tốc độ đọc đã chỉnh!");
+};
+
+window.toggleVoice = () => {
+    console.log("Giọng đọc đã chỉnh!");
+};
 window.closeConfirmModal = () => {
     const confirmModal = document.getElementById('confirm-modal');
     if (confirmModal) confirmModal.style.display = 'none';
