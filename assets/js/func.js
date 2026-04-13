@@ -66,7 +66,7 @@ window.speakWord = (text) => {
     msg.lang = State.audioConfig.lang;
     msg.rate = State.audioConfig.rate;
     window.speechSynthesis.speak(msg);
-};
+}; 
 
 window.handleHomeClick = () => {
     const isLearning = !document.getElementById('view-lesson').classList.contains('hidden');
