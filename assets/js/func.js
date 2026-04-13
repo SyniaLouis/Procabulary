@@ -3,20 +3,24 @@ import { State, renderFlashcard, verify, updateDashboard, backToDashboard } from
 window.toggleFlip = () => {
     const fc = document.getElementById('fc');
     if (!fc) return;
+
     fc.classList.toggle('flipped');
+
     if (fc.classList.contains('flipped')) {
         setTimeout(() => {
             const input = document.getElementById('fc-input');
             if (input) {
+                input.value = ""; 
                 input.focus();
-                input.value = "";
             }
-        }, 300);
+        }, 300); 
     }
 };
 
 window.handleEnter = (e) => {
-    if (e.key === 'Enter') verify();
+    if (e.key === 'Enter') {
+        verify();
+    }
 };
 
 window.backToDashboard = backToDashboard;
@@ -60,7 +64,6 @@ window.speakWord = (text) => {
 
 window.handleHomeClick = () => {
     const isLearning = !document.getElementById('view-lesson').classList.contains('hidden');
-    
     if (isLearning) {
         const confirmModal = document.getElementById('confirm-modal');
         if (confirmModal) confirmModal.style.display = 'flex';
@@ -68,22 +71,14 @@ window.handleHomeClick = () => {
         window.location.href = '../index.html';
     }
 };
+
 window.toggleDarkMode = () => {
     const isDark = document.body.classList.toggle('dark-mode');
     localStorage.setItem('dark-mode', isDark);
     const themeBtn = document.getElementById('theme-btn');
-    if (themeBtn) {
-        themeBtn.innerText = isDark ? '☀️' : '🌙';
-    }
+    if (themeBtn) themeBtn.innerText = isDark ? '☀️' : '🌙';
 };
 
-window.toggleSpeed = () => {
-    console.log("Tốc độ đọc đã chỉnh!");
-};
-
-window.toggleVoice = () => {
-    console.log("Giọng đọc đã chỉnh!");
-};
 window.closeConfirmModal = () => {
     const confirmModal = document.getElementById('confirm-modal');
     if (confirmModal) confirmModal.style.display = 'none';
@@ -98,16 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const fc = document.getElementById('fc');
         const viewLesson = document.getElementById('view-lesson');
-        const input = document.getElementById('fc-input');
         const isLessonActive = viewLesson && !viewLesson.classList.contains('hidden');
-        if (!isLessonActive || !fc) return;
-        if (!fc.classList.contains('flipped')) {
+        
+        if (isLessonActive && fc && !fc.classList.contains('flipped')) {
             window.toggleFlip();
-        }
         }
     }
 });
