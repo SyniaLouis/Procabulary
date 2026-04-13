@@ -1,3 +1,4 @@
+
 export function getSmartFeedback(correctWord, lastInput) {
     const correct = correctWord.toLowerCase();
     const input = lastInput.toLowerCase();
@@ -23,18 +24,22 @@ export function getSmartFeedback(correctWord, lastInput) {
 
     while (i > 0 || j > 0) {
         const current = matrix[i][j];
+        
         if (i > 0 && j > 0 && correct[i - 1] === input[j - 1]) {
             diffMap.unshift({ char: input[j - 1], expected: correct[i - 1], type: 'correct', label: 'Đúng' });
             i--; j--;
         }
+
         else if (i > 0 && j > 0 && current === matrix[i - 1][j - 1] + 1) {
             diffMap.unshift({ char: input[j - 1], expected: correct[i - 1], type: 'wrong', label: 'Sai chữ' });
             i--; j--;
         }
+
         else if (i > 0 && (j === 0 || current === matrix[i - 1][j] + 1)) {
             diffMap.unshift({ char: '', expected: correct[i - 1], type: 'missing', label: 'Thiếu' });
             i--;
         }
+
         else if (j > 0 && (i === 0 || current === matrix[i][j - 1] + 1)) {
             diffMap.unshift({ char: input[j - 1], expected: '', type: 'extra', label: 'Thừa' });
             j--;
@@ -43,5 +48,6 @@ export function getSmartFeedback(correctWord, lastInput) {
 
     const distance = matrix[n][m];
     const accuracy = Math.max(0, Math.round(((n - distance) / n) * 100));
+
     return { accuracy, diffMap };
 }
