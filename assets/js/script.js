@@ -2,7 +2,7 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { SHEET_CSV_URL, ENCOURAGEMENTS, SOFT_COLORS } from "./dtb.js";
-import { findLongestErrorSegment } from "./smafed.js";
+import { getSmartFeedback } from "./smafed.js";
 import { updateProcabScore, saveFinalProgress } from "./procab.js";
 
 export const State = {
@@ -27,8 +27,10 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function updateUIForUser(user) {
-    const slot = document.getElementById('user-profile-slot');
-    if (slot) slot.innerHTML = `<img src="${user.photoURL}" style="border-radius:50%; width:32px; border:2px solid #fff;">`;
+    const avatar = document.getElementById('user-avatar');
+    const userName = document.getElementById('user-name');
+    if (avatar) avatar.src = user.photoURL || 'https://via.placeholder.com/35';
+    if (userName) userName.innerText = user.displayName;
 }
 
 window.addEventListener('load', async () => {
@@ -49,12 +51,13 @@ async function fetchFlashcardsFromSheets() {
                 const words = [];
                 const parts = cols[2].split(',');
                 for (let i = 0; i < parts.length; i += 3) {
-                    if (parts[i] && parts[i+1] && parts[i+2]) words.push({ word: parts[i].trim(), ipa: parts[i+1].trim(), meaning: parts[i+2].trim() });
+                    if (parts[i] && parts[i+1] && parts[i+2]) 
+                        words.push({ word: parts[i].trim(), ipa: parts[i+1].trim(), meaning: parts[i+2].trim(), originalIndex: i/3 });
                 }
                 State.LESSONS_DATABASE[cols[0]] = { title: cols[1], words: words, num: parseInt(cols[3]) };
             }
         });
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Lỗi fetch dữ liệu:", e); }
 }
 
 function parseCSV(t) {
@@ -94,44 +97,85 @@ export function renderFlashcard() {
     State.attemptsPerWord = 0;
     const item = State.sessionWords[State.currentIdx];
     const container = document.getElementById('lesson-content');
+    
     if (item.type === 'special') {
         const q = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
         const c = SOFT_COLORS[Math.floor(Math.random() * SOFT_COLORS.length)];
         container.innerHTML = `<div class="flashcard special-card"><div class="card-face" style="background:${c}">${q}</div></div>`;
         setTimeout(() => { State.currentIdx++; if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish(); }, 2500);
     } else {
-        container.innerHTML = `<div class="flashcard" id="fc" onclick="window.toggleFlip()"><div class="flashcard-inner">
-            <div class="card-face"><div class="word-text">${item.word}</div><div class="ipa-text">/${item.ipa}/</div></div>
-            <div class="card-face card-back" onclick="event.stopPropagation()"><p>${item.meaning}</p>
-            <input type="text" id="fc-input" placeholder="Gõ từ..." onkeydown="window.handleEnter(event)" autocomplete="off">
-            <div id="fc-error" style="color:#ff7675; font-size:0.8rem; margin-top:8px; font-weight:bold;"></div></div></div></div>`;
+        container.innerHTML = `
+            <div class="flashcard" id="fc" onclick="window.toggleFlip()">
+                <div class="flashcard-inner">
+                    <div class="card-face"><div class="word-text">${item.word}</div><div class="ipa-text">/${item.ipa}/</div></div>
+                    <div class="card-face card-back" onclick="event.stopPropagation()">
+                        <p>${item.meaning}</p>
+                        <input type="text" id="fc-input" placeholder="Gõ từ..." onkeydown="window.handleEnter(event)" autocomplete="off">
+                        <div id="fc-error" style="margin-top:12px; min-height: 24px;"></div>
+                    </div>
+                </div>
+            </div>`;
         window.speakWord(item.word);
         setTimeout(() => document.getElementById('fc-input')?.focus(), 300);
     }
 }
 
-export async function finish() {
-    const count = State.sessionWords.filter(w => w.type === 'normal').length;
-    await saveFinalProgress(State.currentLessonId, count, State.currentUserData, State.LESSONS_DATABASE);
-    document.getElementById('lesson-content').innerHTML = `<div style="text-align:center"><h2>🎉 Hoàn thành!</h2><button onclick="window.backToDashboard()">QUAY LẠI</button></div>`;
-}
-
 export function verify() {
     const input = document.getElementById('fc-input');
-    const correct = State.sessionWords[State.currentIdx].word.toLowerCase();
+    const errorDiv = document.getElementById('fc-error');
+    const target = State.sessionWords[State.currentIdx];
+    const correct = target.word.toLowerCase();
     const val = input.value.trim().toLowerCase();
+
     if (val === correct) {
-        updateProcabScore(true, State.currentLessonId, State.sessionWords[State.currentIdx].originalIndex, State.currentUserData);
+        updateProcabScore(true, State.currentLessonId, target.originalIndex, State.currentUserData);
         State.currentIdx++;
         if (State.currentIdx < State.sessionWords.length) renderFlashcard(); else finish();
     } else {
         State.attemptsPerWord++;
-        updateProcabScore(false, State.currentLessonId, State.sessionWords[State.currentIdx].originalIndex, State.currentUserData);
+        updateProcabScore(false, State.currentLessonId, target.originalIndex, State.currentUserData);
+        
         input.style.borderColor = "var(--error)";
-        let seg = findLongestErrorSegment(correct, val);
-        document.getElementById('fc-error').innerText = State.attemptsPerWord >= 2 ? `Gợi ý: Chú ý chữ "${seg.toUpperCase()}"` : "Chưa chính xác!";
-        setTimeout(() => { input.style.borderColor = "var(--border)"; document.getElementById('fc').classList.remove('flipped'); input.value = ""; window.speakWord(State.sessionWords[State.currentIdx].word); }, 1500);
+        const feedback = getSmartFeedback(correct, val);
+        
+        renderVisualFeedback(feedback.diffMap, errorDiv);
+
+        if (State.attemptsPerWord >= 2) {
+            const accuracyInfo = document.createElement('div');
+            accuracyInfo.style.cssText = "color: var(--text-muted); font-size: 0.75rem; margin-top: 5px;";
+            accuracyInfo.innerText = `Độ chính xác: ${feedback.accuracy}% - Cố lên Mây ơi!`;
+            errorDiv.appendChild(accuracyInfo);
+        }
+
+        setTimeout(() => {
+            input.style.borderColor = "var(--border)";
+            document.getElementById('fc').classList.remove('flipped');
+            input.value = "";
+            window.speakWord(target.word);
+        }, 2000);
     }
+}
+
+function renderVisualFeedback(diffMap, targetEl) {
+    targetEl.innerHTML = '';
+    diffMap.forEach(item => {
+        const span = document.createElement('span');
+        span.className = `diff-char diff-${item.type}`;
+        span.innerText = item.char;
+        span.setAttribute('data-label', item.label);
+        targetEl.appendChild(span);
+    });
+}
+
+export async function finish() {
+    const count = State.sessionWords.filter(w => w.type === 'normal').length;
+    await saveFinalProgress(State.currentLessonId, count, State.currentUserData, State.LESSONS_DATABASE);
+    document.getElementById('lesson-content').innerHTML = `
+        <div style="text-align:center; padding: 40px;">
+            <h2 style="font-size: 2rem;">🎉 Hoàn thành!</h2>
+            <p>Em đã hoàn thành xuất sắc bài học này.</p>
+            <button onclick="window.backToDashboard()" class="back-btn">QUAY LẠI DASHBOARD</button>
+        </div>`;
 }
 
 export function backToDashboard() {
