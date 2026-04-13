@@ -83,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const exitBtn = document.getElementById('exit-btn');
     if (exitBtn) {
         exitBtn.onclick = () => {
-            window.location.href = '../index.html';
+            window.backToDashboard(); 
+            window.closeConfirmModal();
         };
     }
 });
