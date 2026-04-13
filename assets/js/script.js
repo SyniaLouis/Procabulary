@@ -44,6 +44,8 @@ function updateUIForUser(user) {
 // 2. Khởi tạo ứng dụng
 window.addEventListener('load', async () => {
     if (localStorage.getItem('dark-mode') === 'true') document.body.classList.add('dark-mode');
+    const themeBtn = document.getElementById('theme-btn');
+        if (themeBtn) themeBtn.innerText = '☀️';
     await fetchFlashcardsFromSheets();
     updateDashboard();
 });
