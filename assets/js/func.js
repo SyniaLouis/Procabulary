@@ -57,6 +57,12 @@ window.startLesson = (count) => {
 window.speakWord = (text) => {
     window.speechSynthesis.cancel();
     const msg = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    let selectedVoice = voices.find(v => v.lang === State.audioConfig.lang) || 
+                        voices.find(v => v.lang.startsWith('en'));
+    if (selectedVoice) {
+        msg.voice = selectedVoice;
+    }
     msg.lang = State.audioConfig.lang;
     msg.rate = State.audioConfig.rate;
     window.speechSynthesis.speak(msg);
