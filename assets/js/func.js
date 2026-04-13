@@ -151,7 +151,7 @@ window.closeCreateModal = () => {
 window.saveNewLesson = async () => {
     const titleInput = document.getElementById('custom-title');
     const dataInput = document.getElementById('custom-data');
-    const errorDiv = document.getElementById('create-error'); /
+    const errorDiv = document.getElementById('create-error'); 
     
     if (!titleInput || !dataInput || !errorDiv) return;
 
