@@ -12,7 +12,10 @@ export const State = {
     currentLessonId: "",
     currentIdx: 0,
     attemptsPerWord: 0,
-    audioConfig: { lang: localStorage.getItem('audio-lang') || 'en-US', rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0 }
+    audioConfig: { 
+        lang: localStorage.getItem('audio-lang') || 'en-US', 
+        rate: parseFloat(localStorage.getItem('audio-rate')) || 1.0 
+    }
 };
 
 // 1. Auth & Data Init
@@ -42,6 +45,11 @@ function updateUIForUser(user) {
 
 window.addEventListener('load', async () => {
     if (localStorage.getItem('dark-mode') === 'true') document.body.classList.add('dark-mode');
+    const speedBtn = document.getElementById('speed-btn');
+    if (speedBtn) speedBtn.innerText = State.audioConfig.rate + 'x';
+    const voiceLabels = { 'en-US': 'US', 'en-GB': 'UK', 'en-AU': 'AU' };
+    const voiceBtn = document.getElementById('voice-btn');
+    if (voiceBtn) voiceBtn.innerText = voiceLabels[State.audioConfig.lang] || 'US';
     await fetchFlashcardsFromSheets();
     updateDashboard();
 });
