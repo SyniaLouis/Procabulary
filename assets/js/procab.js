@@ -1,55 +1,53 @@
-import { doc, setDoc, collection, addDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { auth, db } from "./firebase.js";
 
-export async function updateProcabScore(isCorrect, currentLessonId, wordIndex, currentUserData) {
-    if (!currentUserData.procab_scores[currentLessonId]) {
-        currentUserData.procab_scores[currentLessonId] = {};
-    }
-    if (isCorrect) {
-        currentUserData.procab_scores[currentLessonId][wordIndex] = 0;
-    } else {
-        let currentMistakes = currentUserData.procab_scores[currentLessonId][wordIndex] || 0;
-        currentUserData.procab_scores[currentLessonId][wordIndex] = currentMistakes + 1;
-    }
-    const user = auth.currentUser;
-    if (user) {
-        await setDoc(doc(db, "users", user.uid), currentUserData, { merge: true });
-    }
-}
+export function getSmartFeedback(correctWord, lastInput) {
+    const correct = correctWord.toLowerCase();
+    const input = lastInput.toLowerCase();
+    const n = correct.length;
+    const m = input.length;
 
-export async function saveFinalProgress(currentLessonId, wordsCount, currentUserData, lessonsDb) {
-    let score = currentUserData.cumulative_progress[currentLessonId] || 0;
-    const target = lessonsDb[currentLessonId].num * 5;
-    currentUserData.cumulative_progress[currentLessonId] = Math.min(score + wordsCount, target);
-    const user = auth.currentUser;
-    if (user) {
-        await setDoc(doc(db, "users", user.uid), currentUserData, { merge: true });
+    const matrix = Array.from({ length: n + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= m; j++) matrix[0][j] = j;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            const cost = correct[i - 1] === input[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,     
+                matrix[i][j - 1] + 1,     
+                matrix[i - 1][j - 1] + cost
+            );
+        }
     }
-}
 
-export async function saveCustomLesson(lessonData) {
-    const user = auth.currentUser;
-    if (!user) return;
-    const colRef = collection(db, "users", user.uid, "custom_lessons");
-    return await addDoc(colRef, { ...lessonData, createdAt: Date.now() });
-}
+    let diffMap = [];
+    let i = n, j = m;
 
-export async function deleteCustomLesson(lessonId) {
-    const user = auth.currentUser;
-    if (!user) return;
-    await deleteDoc(doc(db, "users", user.uid, "custom_lessons", lessonId));
-}
+    while (i > 0 || j > 0) {
+        const current = matrix[i][j];
+        
+        if (i > 0 && j > 0 && correct[i - 1] === input[j - 1]) {
+            diffMap.unshift({ char: input[j - 1], expected: correct[i - 1], type: 'correct', label: 'Đúng' });
+            i--; j--;
+        }
 
-export async function getCustomLessons() {
-  const user = auth.currentUser;
-    if (!user) return [];
-    try {
-        const colRef = collection(db, "users", user.uid, "custom_lessons");
-        const snap = await getDocs(colRef);
-        return snap.docs.map(d => ({ id: d.id, ...d.data(), isCustom: true }));
-    } catch (error) {
-        console.error("Lỗi lấy dữ liệu cá nhân:", error);
-        return [];
+        else if (i > 0 && j > 0 && current === matrix[i - 1][j - 1] + 1) {
+            diffMap.unshift({ char: input[j - 1], expected: correct[i - 1], type: 'wrong', label: 'Sai chữ' });
+            i--; j--;
+        }
+
+        else if (i > 0 && (j === 0 || current === matrix[i - 1][j] + 1)) {
+            diffMap.unshift({ char: '', expected: correct[i - 1], type: 'missing', label: 'Thiếu' });
+            i--;
+        }
+
+        else if (j > 0 && (i === 0 || current === matrix[i][j - 1] + 1)) {
+            diffMap.unshift({ char: input[j - 1], expected: '', type: 'extra', label: 'Thừa' });
+            j--;
+        }
     }
-    
+
+    const distance = matrix[n][m];
+    const accuracy = Math.max(0, Math.round(((n - distance) / n) * 100));
+
+    return { accuracy, diffMap };
 }
